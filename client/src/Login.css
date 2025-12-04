@@ -1,0 +1,114 @@
+/* Background */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f8fb;
+  margin: 0;
+  padding: 0;
+}
+
+/* Center container */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 15px;
+}
+
+/* Card styling */
+.auth-card {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.12);
+  width: 350px;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Tabs */
+.auth-tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.auth-tabs span {
+  cursor: pointer;
+  color: #6c8b8b;
+  font-weight: 500;
+  padding-bottom: 8px;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.auth-tabs .active {
+  color: #000;
+  font-weight: bold;
+  border-bottom: 2px solid #6c8b8b;
+}
+
+/* Form groups */
+.form-group {
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  display: block;
+  font-weight: 500;
+}
+
+input {
+  width: 93%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+input:focus {
+  border-color: #6c8b8b;
+}
+
+/* Button */
+.auth-btn {
+  background-color: #6c8b8b;
+  color: white;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background-color 0.3s ease;
+}
+
+.auth-btn:hover {
+  background-color: #5a7777;
+}
+
+/* Animation styles */
+.fade-slide-enter {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.fade-slide-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 300ms ease;
+}
+.fade-slide-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+.fade-slide-exit-active {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 300ms ease;
+}
