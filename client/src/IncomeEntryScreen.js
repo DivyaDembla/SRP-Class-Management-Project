@@ -17,28 +17,49 @@ const IncomeEntryScreen = () => {
 
   const fileInputRef = useRef(null);
 
-  const handleSave = () => {
-    const newErrors = {};
+  // -------------------------------
+  // LIVE VALIDATION + ONBLUR LOGIC
+  // -------------------------------
+  const validateField = (field, value) => {
+    let msg = "";
 
-    if (!date) newErrors.date = "Date is required.";
-    if (!amount) newErrors.amount = "Amount is required.";
-    if (!paymentMode) newErrors.paymentMode = "Payment mode is required.";
-    if (!documentFile) newErrors.documentFile = "Document upload is required.";
+    if (field === "date" && !value) msg = "Date is required.";
+    if (field === "amount" && !value) msg = "Amount is required.";
+    if (field === "paymentMode" && !value) msg = "Payment mode is required.";
+    if (field === "documentFile" && !value) msg = "Document upload is required.";
 
-    // For Student Fee
     if (incomeCategory === "Student Fee") {
-      if (!studentName) newErrors.studentName = "Student name is required.";
-      if (!feeType) newErrors.feeType = "Fee type is required.";
+      if (field === "studentName" && !value)
+        msg = "Student name is required.";
+      if (field === "feeType" && !value)
+        msg = "Fee type is required.";
     }
 
-    // For Other Income
     if (incomeCategory === "Other Income") {
-      if (!remarks) newErrors.remarks = "Remarks are required for Other Income.";
+      if (field === "remarks" && !value)
+        msg = "Remarks are required for Other Income.";
     }
 
-    setErrors(newErrors);
+    setErrors((prev) => ({ ...prev, [field]: msg }));
+  };
 
-    if (Object.keys(newErrors).length > 0) return;
+  const handleSave = () => {
+    const fields = {
+      date,
+      amount,
+      paymentMode,
+      documentFile,
+      studentName,
+      feeType,
+      remarks,
+    };
+
+    // Validate all fields
+    Object.keys(fields).forEach((key) => validateField(key, fields[key]));
+
+    // Stop if any error
+    const hasError = Object.values(errors).some((e) => e);
+    if (hasError) return;
 
     const newEntry = {
       date,
@@ -54,7 +75,7 @@ const IncomeEntryScreen = () => {
 
     setIncomeEntries([...incomeEntries, newEntry]);
 
-    // Reset form
+    // Reset
     setIncomeCategory("Student Fee");
     setDate("");
     setStudentName("");
@@ -82,7 +103,7 @@ const IncomeEntryScreen = () => {
         <h1 className="income-title">Income Entry Screen</h1>
         <hr className="income-divider" />
 
-        {/* Income Details Form */}
+        {/* Income Form */}
         <div className="income-form">
           <div className="income-col">
             <div>
@@ -94,7 +115,10 @@ const IncomeEntryScreen = () => {
                     name="incomeCategory"
                     value="Student Fee"
                     checked={incomeCategory === "Student Fee"}
-                    onChange={() => setIncomeCategory("Student Fee")}
+                    onChange={() => {
+                      setIncomeCategory("Student Fee");
+                      setErrors({});
+                    }}
                   />
                   <span>Student Fee</span>
                 </label>
@@ -104,7 +128,10 @@ const IncomeEntryScreen = () => {
                     name="incomeCategory"
                     value="Other Income"
                     checked={incomeCategory === "Other Income"}
-                    onChange={() => setIncomeCategory("Other Income")}
+                    onChange={() => {
+                      setIncomeCategory("Other Income");
+                      setErrors({});
+                    }}
                   />
                   <span>Other Income</span>
                 </label>
@@ -116,8 +143,12 @@ const IncomeEntryScreen = () => {
               <input
                 type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="income-input"
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  validateField("date", e.target.value);
+                }}
+                onBlur={() => validateField("date", date)}
+                className={`income-input ${errors.date ? "error-border" : ""}`}
               />
               {errors.date && <p className="error-text">{errors.date}</p>}
             </div>
@@ -138,9 +169,13 @@ const IncomeEntryScreen = () => {
               <input
                 type="number"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  validateField("amount", e.target.value);
+                }}
+                onBlur={() => validateField("amount", amount)}
                 placeholder="Numeric Value"
-                className="income-input"
+                className={`income-input ${errors.amount ? "error-border" : ""}`}
               />
               {errors.amount && <p className="error-text">{errors.amount}</p>}
             </div>
@@ -150,9 +185,15 @@ const IncomeEntryScreen = () => {
               <input
                 type="text"
                 value={paymentMode}
-                onChange={(e) => setPaymentMode(e.target.value)}
+                onChange={(e) => {
+                  setPaymentMode(e.target.value);
+                  validateField("paymentMode", e.target.value);
+                }}
+                onBlur={() => validateField("paymentMode", paymentMode)}
                 placeholder="-- Drop DownList --"
-                className="income-input"
+                className={`income-input ${
+                  errors.paymentMode ? "error-border" : ""
+                }`}
               />
               {errors.paymentMode && (
                 <p className="error-text">{errors.paymentMode}</p>
@@ -171,36 +212,58 @@ const IncomeEntryScreen = () => {
                     : "Size"}
                 </span>
               </div>
+
               <div className="income-upload-btns">
                 <input
                   ref={fileInputRef}
                   type="file"
-                  onChange={(e) => setDocumentFile(e.target.files[0])}
+                  onChange={(e) => {
+                    setDocumentFile(e.target.files[0]);
+                    validateField("documentFile", e.target.files[0]);
+                  }}
                   className="hidden"
                 />
-                <button onClick={handleUploadClick} className="btn-secondary">
+
+                <button
+                  onClick={handleUploadClick}
+                  className={`btn-secondary ${
+                    errors.documentFile ? "error-border" : ""
+                  }`}
+                >
                   Upload File
                 </button>
+
                 <button
-                  onClick={() => setDocumentFile(null)}
+                  onClick={() => {
+                    setDocumentFile(null);
+                    validateField("documentFile", null);
+                  }}
                   className="btn-secondary"
                 >
                   Cancel
                 </button>
               </div>
+
               {errors.documentFile && (
                 <p className="error-text">{errors.documentFile}</p>
               )}
             </div>
           </div>
 
+          {/* RIGHT COLUMN */}
           <div className="income-col">
             <div>
               <label className="income-label">Student Name:</label>
               <select
                 value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                className="income-input"
+                onChange={(e) => {
+                  setStudentName(e.target.value);
+                  validateField("studentName", e.target.value);
+                }}
+                onBlur={() => validateField("studentName", studentName)}
+                className={`income-input ${
+                  errors.studentName ? "error-border" : ""
+                }`}
               >
                 <option value="">-- Drop Down From Student Master --</option>
                 <option value="John Doe">John Doe</option>
@@ -215,8 +278,14 @@ const IncomeEntryScreen = () => {
               <label className="income-label">Fee Type:</label>
               <select
                 value={feeType}
-                onChange={(e) => setFeeType(e.target.value)}
-                className="income-input"
+                onChange={(e) => {
+                  setFeeType(e.target.value);
+                  validateField("feeType", e.target.value);
+                }}
+                onBlur={() => validateField("feeType", feeType)}
+                className={`income-input ${
+                  errors.feeType ? "error-border" : ""
+                }`}
               >
                 <option value="">-- Drop DownList --</option>
                 <option value="Tuition Fee">Tuition Fee</option>
@@ -240,9 +309,15 @@ const IncomeEntryScreen = () => {
                 <label className="income-label">Remarks:</label>
                 <textarea
                   value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
+                  onChange={(e) => {
+                    setRemarks(e.target.value);
+                    validateField("remarks", e.target.value);
+                  }}
+                  onBlur={() => validateField("remarks", remarks)}
                   rows="3"
-                  className="income-input"
+                  className={`income-input ${
+                    errors.remarks ? "error-border" : ""
+                  }`}
                 ></textarea>
                 {errors.remarks && (
                   <p className="error-text">{errors.remarks}</p>
@@ -259,9 +334,10 @@ const IncomeEntryScreen = () => {
         </div>
       </div>
 
-      {/* Table Section */}
+      {/* Summary Grid */}
       <div className="income-card">
         <h2 className="income-subtitle">Income Summary Grid</h2>
+
         <div className="table-wrapper">
           <table className="income-table">
             <thead>
@@ -279,6 +355,7 @@ const IncomeEntryScreen = () => {
                 <th>Delete</th>
               </tr>
             </thead>
+
             <tbody>
               {incomeEntries.length > 0 ? (
                 incomeEntries.map((entry, index) => (
@@ -316,7 +393,6 @@ const IncomeEntryScreen = () => {
           </table>
         </div>
 
-        {/* Export buttons */}
         <div className="btn-group">
           <button className="btn-primary">Export as PDF</button>
           <button className="btn-primary">Export as Excel</button>

@@ -15,6 +15,21 @@
   font-size: 12px;
   margin-top: 3px;
 }
+.error-border {
+  border: 2px solid red;
+  outline: none;
+}
+
+.error-border:focus {
+  border: 2px solid darkred;
+}
+
+.error-text {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
 
 
 .form-card,

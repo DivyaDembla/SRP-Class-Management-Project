@@ -14,6 +14,7 @@ const TeacherClassRate = () => {
     classValue: "",
     sectionValue: "",
     subjects: "",
+    rates: {},
   });
 
   // Filters
@@ -49,14 +50,27 @@ const TeacherClassRate = () => {
       return newRates;
     });
 
-    // Remove validation error when user selects
-    setErrors((prev) => ({ ...prev, subjects: "" }));
+    // Clear error for toggled subject
+    setErrors((prev) => ({
+      ...prev,
+      subjects: "",
+      rates: { ...prev.rates, [subject]: "" },
+    }));
   };
 
   const handleRateChange = (subject, rate) => {
     setSubjectRates((prev) => ({
       ...prev,
       [subject]: rate,
+    }));
+
+    // Live validation for rate
+    setErrors((prev) => ({
+      ...prev,
+      rates: {
+        ...prev.rates,
+        [subject]: rate.trim() === "" ? "Rate is required" : "",
+      },
     }));
   };
 
@@ -66,6 +80,7 @@ const TeacherClassRate = () => {
       classValue: "",
       sectionValue: "",
       subjects: "",
+      rates: {},
     };
 
     if (!teacherName) newErrors.teacherName = "Teacher name is required";
@@ -74,33 +89,50 @@ const TeacherClassRate = () => {
     if (Object.keys(subjectRates).length === 0)
       newErrors.subjects = "Please select at least one subject";
 
+    // Validate each selected subject's rate
+    Object.entries(subjectRates).forEach(([subject, rate]) => {
+      if (!rate || rate.trim() === "") {
+        newErrors.rates[subject] = "Rate is required";
+      }
+    });
+
     setErrors(newErrors);
 
-    return Object.values(newErrors).every((e) => e === "");
+    const noErrors = Object.values(newErrors).every((val) => {
+      if (typeof val === "object") return Object.values(val).every((v) => v === "");
+      return val === "";
+    });
+
+    return noErrors;
   };
 
   const handleAddRate = () => {
     if (!validateForm()) return;
 
-    const newEntries = Object.entries(subjectRates).map(
-      ([subject, rate]) => ({
-        teacherName,
-        classValue,
-        sectionValue,
-        subject,
-        rate: rate || "0",
-        status: "Active",
-        createdDate: new Date().toLocaleDateString(),
-      })
-    );
+    const newEntries = Object.entries(subjectRates).map(([subject, rate]) => ({
+      teacherName,
+      classValue,
+      sectionValue,
+      subject,
+      rate: rate.trim(),
+      status: "Active",
+      createdDate: new Date().toLocaleDateString(),
+    }));
 
     setRates([...rates, ...newEntries]);
 
-    // Reset values
+    // Reset form
     setTeacherName("");
     setClassValue("");
     setSectionValue("");
     setSubjectRates({});
+    setErrors({
+      teacherName: "",
+      classValue: "",
+      sectionValue: "",
+      subjects: "",
+      rates: {},
+    });
   };
 
   const handleToggleStatus = (index) => {
@@ -147,6 +179,7 @@ const TeacherClassRate = () => {
                     setTeacherName(e.target.value);
                     setErrors((prev) => ({ ...prev, teacherName: "" }));
                   }}
+                  className={errors.teacherName ? "error-border" : ""}
                 >
                   <option value="">Drop DownList</option>
                   {allTeachers.map((t) => (
@@ -169,6 +202,7 @@ const TeacherClassRate = () => {
                     setClassValue(e.target.value);
                     setErrors((prev) => ({ ...prev, classValue: "" }));
                   }}
+                  className={errors.classValue ? "error-border" : ""}
                 >
                   <option value="">Select Class</option>
                   {allClasses.map((cls) => (
@@ -191,6 +225,7 @@ const TeacherClassRate = () => {
                     setSectionValue(e.target.value);
                     setErrors((prev) => ({ ...prev, sectionValue: "" }));
                   }}
+                  className={errors.sectionValue ? "error-border" : ""}
                 >
                   <option value="">Select Section</option>
                   {allSections.map((sec) => (
@@ -233,7 +268,11 @@ const TeacherClassRate = () => {
                           onChange={(e) =>
                             handleRateChange(subject, e.target.value)
                           }
+                          className={errors.rates[subject] ? "error-border" : ""}
                         />
+                      )}
+                      {errors.rates[subject] && (
+                        <span className="error-text">{errors.rates[subject]}</span>
                       )}
                     </div>
                   ))}
@@ -310,7 +349,6 @@ const TeacherClassRate = () => {
                     <th>Action</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {filteredRates.length > 0 ? (
                     filteredRates.map((rate, index) => (
@@ -325,15 +363,11 @@ const TeacherClassRate = () => {
                         <td>
                           <button
                             className={`tcr-status-btn ${
-                              rate.status === "Active"
-                                ? "deactivate"
-                                : "activate"
+                              rate.status === "Active" ? "deactivate" : "activate"
                             }`}
                             onClick={() => handleToggleStatus(index)}
                           >
-                            {rate.status === "Active"
-                              ? "Deactivate"
-                              : "Activate"}
+                            {rate.status === "Active" ? "Deactivate" : "Activate"}
                           </button>
                         </td>
                       </tr>

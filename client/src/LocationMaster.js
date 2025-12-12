@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./LocationMaster.css";
+
+const API = "http://localhost:5000/api/locations";
 
 const LocationMaster = () => {
   const [locationData, setLocationData] = useState({
@@ -7,20 +10,40 @@ const LocationMaster = () => {
     address: "",
   });
 
-  const [errors, setErrors] = useState({}); // Error state
+  const [errors, setErrors] = useState({});
+  const [locations, setLocations] = useState([]); // fetched list
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setLocationData((prev) => ({ ...prev, [name]: value }));
+  // Fetch all locations on page load
+  useEffect(() => {
+    axios.get(API).then((res) => setLocations(res.data));
+  }, []);
+
+  // --- LIVE VALIDATION ---
+  const validateField = (name, value) => {
+    let message = "";
+    const nameRegex = /^[A-Za-z\s]+$/;
+
+    if (name === "locationName") {
+      if (!value.trim()) message = "Location Name is required";
+      else if (!nameRegex.test(value.trim()))
+        message = "Only letters and spaces allowed";
+    }
+
+    if (name === "address") {
+      if (!value.trim()) message = "Address is required";
+    }
+
+    setErrors((prev) => ({ ...prev, [name]: message }));
   };
 
-  // Validation function
+  // --- FULL FORM VALIDATION ---
   const validate = () => {
     const { locationName, address } = locationData;
     const nameRegex = /^[A-Za-z\s]+$/;
     const newErrors = {};
 
-    if (!locationName.trim()) newErrors.locationName = "Location Name is required";
+    if (!locationName.trim())
+      newErrors.locationName = "Location Name is required";
     else if (!nameRegex.test(locationName.trim()))
       newErrors.locationName = "Only letters and spaces allowed";
 
@@ -30,15 +53,32 @@ const LocationMaster = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleCreate = (e) => {
-    e.preventDefault();
+  // Input handler + validate live
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setLocationData((prev) => ({ ...prev, [name]: value }));
+    validateField(name, value);
+  };
 
+  const handleCreate = async (e) => {
+    e.preventDefault();
     if (!validate()) return;
 
-    console.log("Creating new location:", locationData);
-    alert("✅ Location created successfully!");
-    setLocationData({ locationName: "", address: "" });
-    setErrors({});
+    try {
+      const res = await axios.post(API, locationData);
+
+      alert("✅ Location created successfully!");
+
+      // Add new location to the list without reload
+      setLocations((prev) => [res.data, ...prev]);
+
+      // Reset form
+      setLocationData({ locationName: "", address: "" });
+      setErrors({});
+    } catch (err) {
+      alert("❌ Error creating location");
+      console.log(err);
+    }
   };
 
   const handleCancel = () => {
@@ -51,6 +91,7 @@ const LocationMaster = () => {
       <div className="form-card">
         <h2 className="form-title">Location Master</h2>
         <div className="line"></div>
+
         <form onSubmit={handleCreate}>
           <div className="form-grid">
             <div>
@@ -60,37 +101,59 @@ const LocationMaster = () => {
                 name="locationName"
                 value={locationData.locationName}
                 onChange={handleInputChange}
-                onBlur={validate}
+                onBlur={(e) => validateField("locationName", e.target.value)}
                 placeholder="Enter location name"
-                className={`form-input ${errors.locationName ? "input-error" : ""}`}
+                className={`form-input ${
+                  errors.locationName ? "input-error" : ""
+                }`}
               />
               {errors.locationName && (
                 <span className="error">{errors.locationName}</span>
               )}
             </div>
+
             <div className="grid-full">
               <label className="form-label">Address *</label>
               <textarea
                 name="address"
                 value={locationData.address}
                 onChange={handleInputChange}
-                onBlur={validate}
+                onBlur={(e) => validateField("address", e.target.value)}
                 placeholder="Enter the address"
-                className={`form-textarea ${errors.address ? "input-error" : ""}`}
+                className={`form-textarea ${
+                  errors.address ? "input-error" : ""
+                }`}
                 rows="3"
               ></textarea>
-              {errors.address && <span className="error">{errors.address}</span>}
+              {errors.address && (
+                <span className="error">{errors.address}</span>
+              )}
             </div>
           </div>
+
           <div className="button-group">
             <button type="submit" className="btn btn-primary">
               Create
             </button>
-            <button type="button" onClick={handleCancel} className="btn btn-secondary">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="btn btn-secondary"
+            >
               Cancel
             </button>
           </div>
         </form>
+
+        {/* SHOW ALL LOCATIONS */}
+        <h3 className="list-title">Saved Locations</h3>
+        <ul className="location-list">
+          {locations.map((loc) => (
+            <li key={loc._id}>
+              <strong>{loc.locationName}</strong> — {loc.address}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

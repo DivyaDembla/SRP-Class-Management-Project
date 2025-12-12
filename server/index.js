@@ -1,21 +1,52 @@
+require("dotenv").config(); // Load .env first
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connect
+// Make uploaded files accessible (for documents & photos)
+app.use("/uploads", express.static("uploads"));
+
+// ----------- MongoDB Connection -----------
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log(err));
+  .catch((err) => console.log("MongoDB Error:", err.message));
 
-// Routes
+// ----------- Routes -----------
 app.use("/api/classes", require("./routes/classRoutes"));
+app.use("/api/students", require("./routes/studentRoutes")); // added
 
-app.listen(process.env.PORT || 5000, () =>
-  console.log("Server running on port", process.env.PORT)
-);
+//role master
+app.use("/api/roles", require("./routes/roleRoutes"));
+
+//user master
+app.use("/api/users", require("./routes/userRoutes"));
+
+//assign roles to users
+app.use("/api/permissions", require("./routes/permissionRoutes"));
+
+//location master
+app.use("/api/locations", require("./routes/locationRoutes"));
+
+//class group master
+app.use("/api/class-groups", require("./routes/classGroupRoutes"));
+
+//Teacher master
+app.use("/api/teachers", require("./routes/teacherRoutes"));
+
+//Expense master
+app.use("/api/expenses", require("./routes/expenseRoutes"));
+
+// ----------- Server Start -----------
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});

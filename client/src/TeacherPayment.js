@@ -3,53 +3,23 @@ import "./TeacherPayment.css";
 
 // --- Inline SVG Icons ---
 const DownloadIcon = (props) => (
-  <svg
-    {...props}
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
     <polyline points="7 10 12 15 17 10"></polyline>
     <line x1="12" y1="15" x2="12" y2="3"></line>
   </svg>
 );
 const SearchIcon = (props) => (
-  <svg
-    {...props}
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8"></circle>
     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
   </svg>
 );
 const CheckSquareIcon = (props) => (
-  <svg
-    {...props}
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="9 11 12 14 22 4"></polyline>
     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
   </svg>
@@ -89,12 +59,43 @@ const MOCK_TEACHER_PAYMENTS = [
 const TeacherPayment = () => {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [paymentType, setPaymentType] = useState("Single Teacher Payment");
+
   const [fetchedLectures, setFetchedLectures] = useState(null);
-  const [ratePerLecture, setRatePerLecture] = useState(MOCK_TEACHER_RATE);
+  const [ratePerLecture] = useState(MOCK_TEACHER_RATE);
+
   const [paymentSummary, setPaymentSummary] = useState([]);
   const [paymentReport, setPaymentReport] = useState(MOCK_TEACHER_PAYMENTS);
+
   const [loading, setLoading] = useState(false);
   const [modalContent, setModalContent] = useState(null);
+
+  // -------------------- VALIDATION STATE --------------------
+  const [errors, setErrors] = useState({
+    selectedMonth: "",
+    paymentType: "",
+  });
+
+  // -------------------- VALIDATION LOGIC --------------------
+  const validateField = (name, value) => {
+    let msg = "";
+
+    if (name === "selectedMonth" && value.trim() === "") {
+      msg = "Please select a month.";
+    }
+
+    if (name === "paymentType" && value.trim() === "") {
+      msg = "Please select payment type.";
+    }
+
+    setErrors((prev) => ({ ...prev, [name]: msg }));
+    return msg === "";
+  };
+
+  const isFormValid = () => {
+    const monthValid = validateField("selectedMonth", selectedMonth);
+    const typeValid = validateField("paymentType", paymentType);
+    return monthValid && typeValid;
+  };
 
   const totalPayableAmount = useMemo(() => {
     if (
@@ -118,13 +119,7 @@ const TeacherPayment = () => {
   const closeModal = () => setModalContent(null);
 
   const handleFetch = () => {
-    if (!selectedMonth) {
-      openModal(
-        "Missing Data",
-        "Please select a Month & Year before fetching."
-      );
-      return;
-    }
+    if (!isFormValid()) return;
 
     setLoading(true);
     setTimeout(() => {
@@ -182,14 +177,17 @@ const TeacherPayment = () => {
     };
 
     setPaymentReport((prev) => [newReportEntry, ...prev]);
+
     openModal(
       "Payment Saved",
       `Payment for ${newReportEntry.name} successfully saved.`
     );
+
     setPaymentSummary([]);
     setFetchedLectures(null);
     setSelectedMonth("");
     setPaymentType("Single Teacher Payment");
+    setErrors({ selectedMonth: "", paymentType: "" });
   };
 
   const handleMarkAsPaid = (index) => {
@@ -232,45 +230,80 @@ const TeacherPayment = () => {
 
   return (
     <div className="main-container">
+
       {/* --- Payment Details Card --- */}
       <div className="card">
         <h1 className="card-title">Payment Details</h1>
 
         <section className="input-section">
           <div className="form-row">
+            
+            {/* MONTH FIELD */}
             <div className="form-group">
               <label>Month & Year:</label>
               <input
                 type="month"
                 value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
+                className={errors.selectedMonth ? "error-input" : ""}
+                onChange={(e) => {
+                  setSelectedMonth(e.target.value);
+                  validateField("selectedMonth", e.target.value);
+                }}
+                onBlur={(e) => validateField("selectedMonth", e.target.value)}
               />
+              {errors.selectedMonth && (
+                <p className="error-text">{errors.selectedMonth}</p>
+              )}
             </div>
+
+            {/* PAYMENT TYPE */}
             <div className="form-group">
               <label>Payment Type:</label>
-              <div className="radio-group">
+              <div
+                className={`radio-group ${
+                  errors.paymentType ? "error-input" : ""
+                }`}
+              >
                 <label>
                   <input
                     type="radio"
                     checked={paymentType === "Single Teacher Payment"}
                     value="Single Teacher Payment"
-                    onChange={(e) => setPaymentType(e.target.value)}
+                    onChange={(e) => {
+                      setPaymentType(e.target.value);
+                      validateField("paymentType", e.target.value);
+                    }}
+                    onBlur={(e) =>
+                      validateField("paymentType", e.target.value)
+                    }
                   />{" "}
                   Single
                 </label>
+
                 <label>
                   <input
                     type="radio"
                     checked={paymentType === "Bulk Payment"}
                     value="Bulk Payment"
-                    onChange={(e) => setPaymentType(e.target.value)}
+                    onChange={(e) => {
+                      setPaymentType(e.target.value);
+                      validateField("paymentType", e.target.value);
+                    }}
+                    onBlur={(e) =>
+                      validateField("paymentType", e.target.value)
+                    }
                   />{" "}
                   Bulk
                 </label>
               </div>
+
+              {errors.paymentType && (
+                <p className="error-text">{errors.paymentType}</p>
+              )}
             </div>
           </div>
 
+          {/* READONLY FIELDS */}
           <div className="form-row">
             <div className="form-group">
               <label>No of Lectures:</label>
@@ -298,6 +331,7 @@ const TeacherPayment = () => {
             >
               {loading ? "Fetching..." : "Fetch"}
             </button>
+
             <div className="amount-display">
               <span>Payable Amount:</span>
               <strong>{payableAmountText}</strong>
@@ -306,9 +340,8 @@ const TeacherPayment = () => {
         </section>
       </div>
 
-      {/* --- Payment Summary & Report Card --- */}
+      {/* --- Payment Summary --- */}
       <div className="card">
-        {/* Payment Summary */}
         <section>
           <h2 className="section-title">Payment Summary</h2>
           <div className="table-container">
@@ -341,6 +374,7 @@ const TeacherPayment = () => {
               </tbody>
             </table>
           </div>
+
           {paymentSummary.length > 0 && (
             <button onClick={handleSavePayment} className="btn-save">
               Save Payment
@@ -348,8 +382,9 @@ const TeacherPayment = () => {
           )}
         </section>
       </div>
+
+      {/* --- Payment Report --- */}
       <div className="card">
-        {/* Report */}
         <section>
           <h2 className="section-title">Report</h2>
           <div className="table-container">
@@ -364,15 +399,14 @@ const TeacherPayment = () => {
                   <th>Status</th>
                 </tr>
               </thead>
+
               <tbody>
                 {paymentReport.map((item, i) => (
-                  <tr
-                    key={i}
-                    className={item.status === "Paid" ? "paid-row" : ""}
-                  >
+                  <tr key={i} className={item.status === "Paid" ? "paid-row" : ""}>
                     <td>{item.name}</td>
                     <td>{item.totalLectures}</td>
                     <td>₹{item.totalAmount.toFixed(2)}</td>
+
                     <td>
                       <button
                         onClick={() => handleViewDetails(item)}
@@ -381,6 +415,7 @@ const TeacherPayment = () => {
                         <SearchIcon />
                       </button>
                     </td>
+
                     <td>
                       <button
                         onClick={() => handleGeneratePdf(item)}
@@ -389,6 +424,7 @@ const TeacherPayment = () => {
                         <DownloadIcon />
                       </button>
                     </td>
+
                     <td>
                       {item.status === "Paid" ? (
                         <CheckSquareIcon className="icon-green" />
@@ -404,17 +440,15 @@ const TeacherPayment = () => {
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
         </section>
       </div>
 
-      {/* Modal */}
+      {/* MODAL */}
       {modalContent && (
-        <CustomModal
-          title={modalContent.title}
-          message={modalContent.message}
-        />
+        <CustomModal title={modalContent.title} message={modalContent.message} />
       )}
     </div>
   );

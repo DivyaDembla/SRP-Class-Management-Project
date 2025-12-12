@@ -15,54 +15,72 @@ const LectureEntrySystem = () => {
   const [remarks, setRemarks] = useState("");
   const [timetable, setTimetable] = useState([]);
 
-  // NEW ERROR STATE
+  // ERROR STATE
   const [errors, setErrors] = useState({});
 
-  // VALIDATION FUNCTION
-  const validateForm = () => {
-    const newErrors = {};
+  const alphaNum = /^[a-zA-Z0-9]+$/;
 
-    if (!date) newErrors.date = "Please select a date.";
-    if (!className) newErrors.className = "Please select class.";
-    if (!section) newErrors.section = "Please enter section.";
-    if (!subject) newErrors.subject = "Please select subject.";
-    if (!chapterName) newErrors.chapterName = "Please enter chapter name.";
-    if (!timeFrom) newErrors.timeFrom = "Select start time.";
-    if (!timeTo) newErrors.timeTo = "Select end time.";
+  // VALIDATE INDIVIDUAL FIELD
+  const validateField = (field, value) => {
+    let error = "";
 
-    // ✔ section must be alphanumeric  
-    const alphaNum = /^[a-zA-Z0-9]+$/;
-    if (section && !alphaNum.test(section)) {
-      newErrors.section = "Section must be alphanumeric (e.g., A1, B2).";
+    switch (field) {
+      case "date":
+        if (!value) error = "Please select a date.";
+        else {
+          const selected = new Date(value);
+          const today = new Date();
+          const yesterday = new Date();
+          today.setHours(0, 0, 0, 0);
+          yesterday.setDate(today.getDate() - 1);
+          yesterday.setHours(0, 0, 0, 0);
+          selected.setHours(0, 0, 0, 0);
+          if (selected < yesterday || selected > today)
+            error = "Only entries for today or yesterday are allowed.";
+        }
+        break;
+      case "className":
+        if (!value) error = "Please select class.";
+        break;
+      case "section":
+        if (!value) error = "Please enter section.";
+        else if (!alphaNum.test(value))
+          error = "Section must be alphanumeric (e.g., A1, B2).";
+        break;
+      case "subject":
+        if (!value) error = "Please select subject.";
+        break;
+      case "chapterName":
+        if (!value) error = "Please enter chapter name.";
+        break;
+      case "timeFrom":
+        if (!value) error = "Select start time.";
+        break;
+      case "timeTo":
+        if (!value) error = "Select end time.";
+        else if (timeFrom && value <= timeFrom)
+          error = "End time must be later than start time.";
+        break;
+      default:
+        break;
     }
 
-    // ✔ time must be valid
-    if (timeFrom && timeTo && timeFrom >= timeTo) {
-      newErrors.timeTo = "End time must be later than start time.";
-    }
-
-    // ✔ date must be today or yesterday
-    if (date) {
-      const selected = new Date(date);
-      const today = new Date();
-      const yesterday = new Date();
-
-      today.setHours(0, 0, 0, 0);
-      yesterday.setDate(today.getDate() - 1);
-      yesterday.setHours(0, 0, 0, 0);
-      selected.setHours(0, 0, 0, 0);
-
-      if (selected < yesterday || selected > today) {
-        newErrors.date = "Only entries for today or yesterday are allowed.";
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors((prev) => ({ ...prev, [field]: error }));
+    return error === "";
   };
 
-  const clearError = (field) => {
-    setErrors((prev) => ({ ...prev, [field]: "" }));
+  // VALIDATE ENTIRE FORM
+  const validateForm = () => {
+    const fields = [
+      "date",
+      "className",
+      "section",
+      "subject",
+      "chapterName",
+      "timeFrom",
+      "timeTo",
+    ];
+    return fields.every((f) => validateField(f, eval(f)));
   };
 
   const handleSave = () => {
@@ -83,7 +101,7 @@ const LectureEntrySystem = () => {
 
     setTimetable([...timetable, newEntry]);
 
-    // reset
+    // reset form
     setDate("");
     setClassName("");
     setSection("");
@@ -97,14 +115,13 @@ const LectureEntrySystem = () => {
   };
 
   const handleDelete = (index) => {
-    const updated = timetable.filter((_, i) => i !== index);
-    setTimetable(updated);
+    setTimetable(timetable.filter((_, i) => i !== index));
   };
 
   return (
     <div className="lecture-content">
       <CollapsibleCard title="Lecture Entry System" defaultOpen={false}>
-        
+        {/* TEACHER */}
         <div className="form-group">
           <label>Teacher</label>
           <input type="text" value={teacher} readOnly />
@@ -118,8 +135,10 @@ const LectureEntrySystem = () => {
             value={date}
             onChange={(e) => {
               setDate(e.target.value);
-              clearError("date");
+              validateField("date", e.target.value); // Live validation
             }}
+            onBlur={() => validateField("date", date)}
+            className={errors.date ? "error-border" : ""}
           />
           {errors.date && <p className="error-text">{errors.date}</p>}
         </div>
@@ -131,8 +150,10 @@ const LectureEntrySystem = () => {
             value={className}
             onChange={(e) => {
               setClassName(e.target.value);
-              clearError("className");
+              validateField("className", e.target.value); // Live validation
             }}
+            onBlur={() => validateField("className", className)}
+            className={errors.className ? "error-border" : ""}
           >
             <option value="" disabled hidden>
               Enter Class
@@ -150,11 +171,13 @@ const LectureEntrySystem = () => {
           <input
             type="text"
             value={section}
+            placeholder="Enter Section (e.g., A1)"
             onChange={(e) => {
               setSection(e.target.value);
-              clearError("section");
+              validateField("section", e.target.value); // Live validation
             }}
-            placeholder="Enter Section (e.g., A1)"
+            onBlur={() => validateField("section", section)}
+            className={errors.section ? "error-border" : ""}
           />
           {errors.section && <p className="error-text">{errors.section}</p>}
         </div>
@@ -166,8 +189,10 @@ const LectureEntrySystem = () => {
             value={subject}
             onChange={(e) => {
               setSubject(e.target.value);
-              clearError("subject");
+              validateField("subject", e.target.value); // Live validation
             }}
+            onBlur={() => validateField("subject", subject)}
+            className={errors.subject ? "error-border" : ""}
           >
             <option value="" disabled hidden>
               Enter Subject
@@ -185,11 +210,13 @@ const LectureEntrySystem = () => {
           <input
             type="text"
             value={chapterName}
+            placeholder="Enter chapter name"
             onChange={(e) => {
               setChapterName(e.target.value);
-              clearError("chapterName");
+              validateField("chapterName", e.target.value); // Live validation
             }}
-            placeholder="Enter chapter name"
+            onBlur={() => validateField("chapterName", chapterName)}
+            className={errors.chapterName ? "error-border" : ""}
           />
           {errors.chapterName && (
             <p className="error-text">{errors.chapterName}</p>
@@ -216,8 +243,10 @@ const LectureEntrySystem = () => {
               value={timeFrom}
               onChange={(e) => {
                 setTimeFrom(e.target.value);
-                clearError("timeFrom");
+                validateField("timeFrom", e.target.value); // Live validation
               }}
+              onBlur={() => validateField("timeFrom", timeFrom)}
+              className={errors.timeFrom ? "error-border" : ""}
             />
             {errors.timeFrom && <p className="error-text">{errors.timeFrom}</p>}
           </div>
@@ -229,8 +258,10 @@ const LectureEntrySystem = () => {
               value={timeTo}
               onChange={(e) => {
                 setTimeTo(e.target.value);
-                clearError("timeTo");
+                validateField("timeTo", e.target.value); // Live validation
               }}
+              onBlur={() => validateField("timeTo", timeTo)}
+              className={errors.timeTo ? "error-border" : ""}
             />
             {errors.timeTo && <p className="error-text">{errors.timeTo}</p>}
           </div>

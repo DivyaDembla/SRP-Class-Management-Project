@@ -1,4 +1,5 @@
-.assignroles-content { /* Renamed from .assignroles-container for consistency */
+.assignroles-content {
+  /* Renamed from .assignroles-container for consistency */
   padding: 2rem;
   background-color: #f3f4f6; /* gray-100 */
   color: #374151; /* gray-800 */
@@ -111,44 +112,44 @@
 
 /* --- Button Group (Standardized) --- */
 .button-group {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    padding-top: 20px;
-    margin-top: 20px;
-    border-top: 1px solid #ddd; /* Separator line */
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid #ddd; /* Separator line */
 }
 
 /* Base style for all form buttons */
 .btn-form {
-    padding: 10px 25px;
-    border: none;
-    border-radius: 6px; 
-    cursor: pointer;
-    font-size: 16px; 
-    font-weight: 500;
-    transition: background-color 0.2s, opacity 0.2s;
-    min-width: 120px;
-    color: white; 
+  padding: 10px 25px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s, opacity 0.2s;
+  min-width: 120px;
+  color: white;
 }
 .btn-form:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* 2. Update Button (Teal/Dark Green) */
 .btn-update-mode {
-    background-color: #639294; /* Teal/Muted Green */
+  background-color: #639294; /* Teal/Muted Green */
 }
 .btn-update-mode:hover:not(:disabled) {
-    background-color: #558082;
+  background-color: #558082;
 }
 
 /* 3. Reset Button (Light Gray) */
 .btn-reset-mode {
-    background-color: #e0e0e0;
-    color: #4a4a4a; /* Dark text for reset */
+  background-color: #e0e0e0;
+  color: #4a4a4a; /* Dark text for reset */
 }
 .btn-reset-mode:hover:not(:disabled) {
-    background-color: #ccc;
+  background-color: #ccc;
 }

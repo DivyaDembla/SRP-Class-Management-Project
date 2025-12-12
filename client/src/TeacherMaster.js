@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CollapsibleCard from "./CollapsibleCard";
 import "./TeacherMaster.css";
 import ExcelManager from "./ExcelManager";
+import axios from "axios";
+
+const API = "http://localhost:5000/api/teachers";
 
 export default function TeacherMaster() {
   const [teachers, setTeachers] = useState([]);
@@ -33,36 +36,53 @@ export default function TeacherMaster() {
   ];
 
   const batchesList = ["Batch A", "Batch B", "Batch C", "Batch D"];
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const res = await axios.get(API);
+        setTeachers(res.data);
+      } catch (err) {
+        console.error("Error fetching teachers:", err);
+      }
+    };
+
+    fetchTeachers();
+  }, []);
 
   // ---------------------------
   // Toggle select for classes/batches
   // ---------------------------
   const toggleSelect = (field, value) => {
-  setFormData((prev) => ({
-    ...prev,
-    [field]: prev[field].includes(value)
-      ? prev[field].filter((v) => v !== value)
-      : [...prev[field], value],
-  }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field].includes(value)
+        ? prev[field].filter((v) => v !== value)
+        : [...prev[field], value],
+    }));
 
-  // Clear error instantly
-  setErrors((prev) => ({ ...prev, [field]: "" }));
-};
-
+    // Clear error instantly
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
 
   // ---------------------------
-  // Handle input change
+  // Live validation & input change
   // ---------------------------
   const handleInputChange = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
-  // Instant validation
-  const errorMsg = validateField(name, value);
-  setErrors((prev) => ({ ...prev, [name]: errorMsg }));
-};
+    // Live validation while typing
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+  };
 
+  // ---------------------------
+  // OnBlur validation
+  // ---------------------------
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+  };
 
   // ---------------------------
   // Subject handlers
@@ -71,6 +91,16 @@ export default function TeacherMaster() {
     const newSubjects = [...formData.subjects];
     newSubjects[index] = e.target.value;
     setFormData((prev) => ({ ...prev, subjects: newSubjects }));
+
+    // Live validation for subjects
+    if (!newSubjects[index].trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        subjects: "All subject fields are required.",
+      }));
+    } else {
+      setErrors((prev) => ({ ...prev, subjects: "" }));
+    }
   };
 
   const addSubjectField = () =>
@@ -80,68 +110,86 @@ export default function TeacherMaster() {
     if (formData.subjects.length > 1) {
       const newSubjects = formData.subjects.filter((_, i) => i !== index);
       setFormData((prev) => ({ ...prev, subjects: newSubjects }));
+
+      // Re-validate subjects
+      if (!newSubjects.every((s) => s.trim())) {
+        setErrors((prev) => ({
+          ...prev,
+          subjects: "All subject fields are required.",
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, subjects: "" }));
+      }
     }
   };
 
   // ---------------------------
   // File upload
   // ---------------------------
-const handleFileChange = (e) => {
-  setFormData((prev) => ({
-    ...prev,
-    fileName: e.target.files.length > 0 ? e.target.files[0].name : "Upload Files",
-  }));
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFormData((prev) => ({
+      ...prev,
+      fileName: file ? file.name : "Upload Files",
+    }));
 
-  setErrors((prev) => ({ ...prev, fileName: "" }));
-};
-
-const validateField = (name, value) => {
-  let msg = "";
-
-  switch (name) {
-    case "fullName":
-      if (!value.trim()) msg = "Full Name is required.";
-      else if (!/^[A-Za-z ]+$/.test(value))
-        msg = "Name must contain only alphabets.";
-      break;
-
-    case "mobileNumber":
-      if (!value.trim()) msg = "Mobile Number is required.";
-      else if (!/^\d{10}$/.test(value))
-        msg = "Enter a valid 10-digit number.";
-      break;
-
-    case "emailAddress":
-      if (!value.trim()) msg = "Email Address is required.";
-      else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value))
-        msg = "Enter a valid email.";
-      break;
-
-    case "qualification":
-      if (!value.trim()) msg = "Qualification is required.";
-      break;
-
-    case "address":
-      if (!value.trim()) msg = "Address is required.";
-      break;
-
-    case "documentNumber":
-      if (!value.trim()) msg = "Document Number is required.";
-      break;
-
-    case "joiningDate":
-      if (!value.trim()) msg = "Joining Date is required.";
-      break;
-
-    default:
-      break;
-  }
-
-  return msg;
-};
+    // Validate file instantly
+    setErrors((prev) => ({
+      ...prev,
+      fileName: file ? "" : "Upload a document.",
+    }));
+  };
 
   // ---------------------------
-  // VALIDATION
+  // Field validation
+  // ---------------------------
+  const validateField = (name, value) => {
+    let msg = "";
+
+    switch (name) {
+      case "fullName":
+        if (!value.trim()) msg = "Full Name is required.";
+        else if (!/^[A-Za-z ]+$/.test(value))
+          msg = "Name must contain only alphabets.";
+        break;
+
+      case "mobileNumber":
+        if (!value.trim()) msg = "Mobile Number is required.";
+        else if (!/^\d{10}$/.test(value))
+          msg = "Enter a valid 10-digit number.";
+        break;
+
+      case "emailAddress":
+        if (!value.trim()) msg = "Email Address is required.";
+        else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value))
+          msg = "Enter a valid email.";
+        break;
+
+      case "qualification":
+        if (!value.trim()) msg = "Qualification is required.";
+        break;
+
+      case "address":
+        if (!value.trim()) msg = "Address is required.";
+        break;
+
+      case "documentNumber":
+        if (!value.trim()) msg = "Document Number is required.";
+        break;
+
+      case "joiningDate":
+        if (!value.trim()) msg = "Joining Date is required.";
+        break;
+
+      default:
+        break;
+    }
+
+    return msg;
+  };
+
+  // ---------------------------
+  // Full form validation
   // ---------------------------
   const validateForm = () => {
     const fields = [
@@ -166,29 +214,13 @@ const validateField = (name, value) => {
 
       switch (field) {
         case "fullName":
-          if (!value.trim()) msg = "Full Name is required.";
-          else if (!/^[A-Za-z ]+$/.test(value))
-            msg = "Name must contain only alphabets.";
-          break;
-
         case "mobileNumber":
-          if (!value.trim()) msg = "Mobile Number is required.";
-          else if (!/^\d{10}$/.test(value))
-            msg = "Enter a valid 10-digit number.";
-          break;
-
         case "emailAddress":
-          if (!value.trim()) msg = "Email Address is required.";
-          else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value))
-            msg = "Enter a valid email.";
-          break;
-
         case "qualification":
-          if (!value.trim()) msg = "Qualification is required.";
-          break;
-
         case "address":
-          if (!value.trim()) msg = "Address is required.";
+        case "documentNumber":
+        case "joiningDate":
+          msg = validateField(field, value);
           break;
 
         case "subjects":
@@ -204,17 +236,8 @@ const validateField = (name, value) => {
           if (!value.length) msg = "Select at least one batch.";
           break;
 
-        case "documentNumber":
-          if (!value.trim()) msg = "Document Number is required.";
-          break;
-
-        case "joiningDate":
-          if (!value.trim()) msg = "Joining Date is required.";
-          break;
-
         case "fileName":
-          if (!value || value === "Upload Files")
-            msg = "Upload a document.";
+          if (!value || value === "Upload Files") msg = "Upload a document.";
           break;
 
         default:
@@ -231,20 +254,36 @@ const validateField = (name, value) => {
   // ---------------------------
   // Submit
   // ---------------------------
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    if (editingIndex !== null) {
-      setTeachers((prev) =>
-        prev.map((t, i) => (i === editingIndex ? formData : t))
-      );
-      setEditingIndex(null);
-    } else {
-      setTeachers((prev) => [...prev, formData]);
-    }
+    try {
+      const formDataToSend = new FormData();
 
-    resetForm();
+      Object.keys(formData).forEach((key) => {
+        if (key === "subjects" || key === "classes" || key === "batches") {
+          formDataToSend.append(key, JSON.stringify(formData[key]));
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
+      const res = await axios.post(API, formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      // Add to table instantly
+      setTeachers((prev) => [...prev, res.data]);
+
+      alert("Teacher Saved Successfully!");
+
+      resetForm();
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error saving teacher");
+    }
   };
 
   // ---------------------------
@@ -265,24 +304,25 @@ const validateField = (name, value) => {
       status: "Active",
       fileName: "Upload Files",
     });
-
     setErrors({});
     setEditingIndex(null);
   };
 
   // ---------------------------
-  // Edit Item
+  // Edit / Delete
   // ---------------------------
   const editTeacher = (index) => {
     setEditingIndex(index);
     setFormData(teachers[index]);
   };
 
-  // ---------------------------
-  // Delete
-  // ---------------------------
   const deleteTeacher = (index) =>
     setTeachers((prev) => prev.filter((_, i) => i !== index));
+
+  // ---------------------------
+  // JSX with red border on errors
+  // ---------------------------
+  const inputClass = (field) => (errors[field] ? "error-input" : "");
 
   return (
     <div className="teachermaster-content">
@@ -296,6 +336,8 @@ const validateField = (name, value) => {
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("fullName")}
               />
               {errors.fullName && <p className="error">{errors.fullName}</p>}
             </div>
@@ -307,6 +349,8 @@ const validateField = (name, value) => {
                 name="mobileNumber"
                 value={formData.mobileNumber}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("mobileNumber")}
               />
               {errors.mobileNumber && (
                 <p className="error">{errors.mobileNumber}</p>
@@ -320,6 +364,8 @@ const validateField = (name, value) => {
                 name="emailAddress"
                 value={formData.emailAddress}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("emailAddress")}
               />
               {errors.emailAddress && (
                 <p className="error">{errors.emailAddress}</p>
@@ -333,6 +379,8 @@ const validateField = (name, value) => {
                 name="qualification"
                 value={formData.qualification}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("qualification")}
               />
               {errors.qualification && (
                 <p className="error">{errors.qualification}</p>
@@ -346,6 +394,8 @@ const validateField = (name, value) => {
               name="address"
               value={formData.address}
               onChange={handleInputChange}
+              onBlur={handleBlur}
+              className={inputClass("address")}
             ></textarea>
             {errors.address && <p className="error">{errors.address}</p>}
           </div>
@@ -359,6 +409,15 @@ const validateField = (name, value) => {
                     type="text"
                     value={subject}
                     onChange={(e) => handleSubjectChange(index, e)}
+                    onBlur={() => {
+                      if (!subject.trim())
+                        setErrors((prev) => ({
+                          ...prev,
+                          subjects: "All subject fields are required.",
+                        }));
+                      else setErrors((prev) => ({ ...prev, subjects: "" }));
+                    }}
+                    className={errors.subjects ? "error-input" : ""}
                   />
                   <button
                     type="button"
@@ -424,6 +483,8 @@ const validateField = (name, value) => {
                 name="documentNumber"
                 value={formData.documentNumber}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("documentNumber")}
               />
               {errors.documentNumber && (
                 <p className="error">{errors.documentNumber}</p>
@@ -437,6 +498,8 @@ const validateField = (name, value) => {
                 name="joiningDate"
                 value={formData.joiningDate}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("joiningDate")}
               />
               {errors.joiningDate && (
                 <p className="error">{errors.joiningDate}</p>
@@ -447,7 +510,12 @@ const validateField = (name, value) => {
           <div className="grid">
             <div>
               <label>Document Upload:</label>
-              <input type="file" name="documentFile" onChange={handleFileChange} />
+              <input
+                type="file"
+                name="documentFile"
+                onChange={handleFileChange}
+                className={inputClass("fileName")}
+              />
               {errors.fileName && <p className="error">{errors.fileName}</p>}
             </div>
 
@@ -469,11 +537,7 @@ const validateField = (name, value) => {
               {editingIndex !== null ? "Update" : "Save"}
             </button>
 
-            <button
-              type="button"
-              onClick={resetForm}
-              className="btn-danger"
-            >
+            <button type="button" onClick={resetForm} className="btn-danger">
               Reset
             </button>
           </div>

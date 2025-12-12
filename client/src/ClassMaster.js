@@ -6,13 +6,9 @@ import axios from "axios";
 const API = "http://localhost:5000/api/classes";
 
 export default function ClassMaster() {
-  const [classes, setClasses] = useState(() => {
-    const cached = localStorage.getItem("classes_store");
-    return cached ? JSON.parse(cached) : [];
-  });
-
+  const [classes, setClasses] = useState([]);
   const [form, setForm] = useState({
-    id: null,
+    _id: null,
     name: "",
     section: "",
     description: "",
@@ -20,9 +16,9 @@ export default function ClassMaster() {
   });
 
   const [errors, setErrors] = useState({});
+  const editing = useMemo(() => form._id !== null, [form._id]);
 
-  const editing = useMemo(() => form.id !== null, [form.id]);
-
+  // Fetch classes
   useEffect(() => {
     axios.get(API).then((res) => setClasses(res.data));
   }, []);
@@ -38,13 +34,16 @@ export default function ClassMaster() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setErrors((p) => ({ ...p, [name]: "" })); // clear field error
+
     setForm((p) => ({ ...p, [name]: value }));
+
+    // Clear error WHILE typing for that field
+    setErrors((prev) => ({ ...prev, [name]: "", duplicate: "" }));
   };
 
   const resetForm = () => {
     setForm({
-      id: null,
+      _id: null,
       name: "",
       section: "",
       description: "",
@@ -54,30 +53,52 @@ export default function ClassMaster() {
   };
 
   const normalizeKey = (name, section) =>
-    `${name}`.trim().toLowerCase() + `|${section}`.trim().toLowerCase();
+    `${name}`.trim().toLowerCase() + "|" + `${section}`.trim().toLowerCase();
 
-  const validate = () => {
-    const newErrors = {};
+  // REAL-TIME + FULL VALIDATION
+  const validate = (fieldName) => {
+    let newErrors = { ...errors };
 
-    if (!form.name.trim()) newErrors.name = "Class Name is required";
+    // 🟦 Validate Class Name (Required)
+    if (!form.name.trim()) {
+      if (!fieldName || fieldName === "name") {
+        newErrors.name = "Class Name is required";
+      }
+    } else {
+      if (fieldName === "name") newErrors.name = "";
+    }
 
+    // 🟦 Duplicate Check (if name or section involved)
     const key = normalizeKey(form.name, form.section);
-
     const duplicate = classes.some(
       (c) =>
         normalizeKey(c.name, c.section) === key &&
-        (editing ? c.id !== form.id : true)
+        (editing ? c._id !== form._id : true)
     );
 
-    if (duplicate)
-      newErrors.duplicate = "This Class Name + Section already exists";
+    if (duplicate) {
+      if (!fieldName || fieldName === "name" || fieldName === "section") {
+        newErrors.duplicate = "This Class Name + Section already exists";
+      }
+    } else {
+      if (fieldName === "name" || fieldName === "section") {
+        newErrors.duplicate = "";
+      }
+    }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    // If validating whole form → return true/false
+    if (!fieldName) {
+      return Object.values(newErrors).every((v) => v === "");
+    }
+
+    return true;
   };
 
+  // SAVE
   const handleSave = async () => {
-    if (!validate()) return;
+    if (!validate()) return; // full validation
 
     const payload = {
       name: form.name.trim(),
@@ -88,25 +109,29 @@ export default function ClassMaster() {
     };
 
     const res = await axios.post(API, payload);
-    setClasses((prev) => [res.data, ...prev]);
 
+    setClasses((prev) => [res.data, ...prev]);
     resetForm();
   };
 
+  // EDIT
   const handleEdit = (row) => {
     setForm({ ...row });
     setErrors({});
   };
 
+  // UPDATE
   const handleUpdate = async () => {
     if (!editing || !validate()) return;
 
-    const res = await axios.put(`${API}/${form._id}`, {
+    const payload = {
       name: form.name.trim(),
       section: form.section.trim(),
       description: form.description.trim(),
       status: form.status,
-    });
+    };
+
+    const res = await axios.put(`${API}/${form._id}`, payload);
 
     setClasses((prev) =>
       prev.map((c) => (c._id === res.data._id ? res.data : c))
@@ -115,6 +140,7 @@ export default function ClassMaster() {
     resetForm();
   };
 
+  // TOGGLE ACTIVE/INACTIVE
   const handleToggle = async (id) => {
     const res = await axios.patch(`${API}/${id}/toggle`);
     setClasses((prev) =>
@@ -124,8 +150,7 @@ export default function ClassMaster() {
 
   return (
     <div className="classmaster-content">
-      {/* Collapsible Form Card */}
-      <CollapsibleCard title="Add / Edit Class" defaultOpen={false}>
+      <CollapsibleCard title="Add / Edit Class" defaultOpen={true}>
         <div className="form-group">
           <label>Class Name:</label>
           <input
@@ -133,6 +158,7 @@ export default function ClassMaster() {
             name="name"
             value={form.name}
             onChange={handleChange}
+            onBlur={() => validate("name")} // REAL-TIME VALIDATION
           />
           {errors.name && <p className="error">{errors.name}</p>}
         </div>
@@ -144,8 +170,11 @@ export default function ClassMaster() {
             name="section"
             value={form.section}
             onChange={handleChange}
+            onBlur={() => validate("section")} // REAL-TIME VALIDATION
           />
         </div>
+
+        {errors.duplicate && <p className="error">{errors.duplicate}</p>}
 
         <div className="form-group">
           <label>Description:</label>
@@ -155,13 +184,6 @@ export default function ClassMaster() {
             onChange={handleChange}
           />
         </div>
-
-        {/* Duplicate Warning */}
-        {errors.duplicate && (
-          <p className="error" style={{ marginBottom: "10px" }}>
-            {errors.duplicate}
-          </p>
-        )}
 
         <div className="form-group">
           <label>Status:</label>
@@ -173,7 +195,7 @@ export default function ClassMaster() {
                 value="Active"
                 checked={form.status === "Active"}
                 onChange={handleChange}
-              />{" "}
+              />
               Active
             </label>
             <label>
@@ -183,7 +205,7 @@ export default function ClassMaster() {
                 value="Inactive"
                 checked={form.status === "Inactive"}
                 onChange={handleChange}
-              />{" "}
+              />
               Inactive
             </label>
           </div>
@@ -200,7 +222,7 @@ export default function ClassMaster() {
         </div>
       </CollapsibleCard>
 
-      {/* Table Card */}
+      {/* TABLE */}
       <div className="table-card">
         <h2>Class List</h2>
         <hr />
@@ -215,6 +237,7 @@ export default function ClassMaster() {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {classes.length === 0 ? (
               <tr>
@@ -224,7 +247,7 @@ export default function ClassMaster() {
               </tr>
             ) : (
               classes.map((row) => (
-                <tr key={row.id}>
+                <tr key={row._id}>
                   <td>{row.name}</td>
                   <td>{row.section}</td>
                   <td>{row.description}</td>
@@ -232,7 +255,7 @@ export default function ClassMaster() {
                   <td>{row.status}</td>
                   <td>
                     <button onClick={() => handleEdit(row)}>Edit</button>
-                    <button onClick={() => handleToggle(row.id)}>
+                    <button onClick={() => handleToggle(row._id)}>
                       {row.status === "Active" ? "Deactivate" : "Activate"}
                     </button>
                   </td>

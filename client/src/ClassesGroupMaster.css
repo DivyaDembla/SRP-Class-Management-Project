@@ -32,11 +32,10 @@
   margin: 15px 0 25px 0;
 }
 
-/* Form */
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
 @media (min-width: 768px) {

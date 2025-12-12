@@ -1,5 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import axios from "axios";
 import "./UserMaster.css";
+
+const API = "http://localhost:5000/api/users";
 
 // --- User List Component ---
 const UserListTable = ({ users, onEdit }) => {
@@ -42,10 +45,11 @@ const UserListTable = ({ users, onEdit }) => {
     </div>
   );
 };
+
 // ----------------------------
 
 const initialFormData = {
-  id: null, 
+  id: null,
   name: "",
   userCode: "",
   gender: "Male",
@@ -58,27 +62,66 @@ const UserMaster = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
-  const [errors, setErrors] = useState({}); // Error state
+
+  const [errors, setErrors] = useState({}); // Validation errors
+  useEffect(() => {
+    axios.get(API).then((res) => setUsers(res.data));
+  }, []);
 
   const editing = useMemo(() => editingUser !== null, [editingUser]);
 
   const roles = ["Teacher", "Staff", "Accountant", "Admin"];
   const locations = ["Chembur", "Mankhur", "Andheri", "Kurla", "Ghatkopar"];
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // ----------------------------------------
+  // LIVE VALIDATION FOR EACH FIELD
+  // ----------------------------------------
+  const validateField = (field, value) => {
+    let message = "";
+
+    if (field === "name") {
+      const nameRegex = /^[A-Za-z\s]+$/;
+      if (!value.trim()) message = "Name is required";
+      else if (!nameRegex.test(value.trim()))
+        message = "Only letters and spaces allowed";
+    }
+
+    if (field === "userCode") {
+      const codeRegex = /^[A-Za-z0-9]+$/;
+      if (!value.trim()) message = "User Code is required";
+      else if (!codeRegex.test(value.trim()))
+        message = "User Code must be alphanumeric";
+      else if (!editing && users.some((u) => u.userCode === value.trim()))
+        message = "User Code already exists";
+    }
+
+    if (field === "role") {
+      if (!value) message = "Select a role";
+    }
+
+    if (field === "location") {
+      if (formData.location.length === 0) message = "Add at least one location";
+    }
+
+    setErrors((prev) => ({ ...prev, [field]: message }));
   };
 
-     const preventEnterSubmit = (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-  }
-};
+  // Input change + validation
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
 
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    validateField(name, value);
+  };
+
+  const preventEnterSubmit = (e) => {
+    if (e.key === "Enter") e.preventDefault();
+  };
 
   const handleRoleChange = (e) => {
     setFormData((prev) => ({ ...prev, role: e.target.value }));
+    validateField("role", e.target.value);
   };
 
   const handleLocationChange = (e) => {
@@ -92,14 +135,17 @@ const UserMaster = () => {
         location: [...prev.location, selectedLocation],
       }));
       setSelectedLocation("");
+
+      validateField("location");
     }
   };
 
   const handleRemoveLocation = (locToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      location: prev.location.filter((loc) => loc !== locToRemove),
-    }));
+    setFormData((prev) => {
+      const updated = prev.location.filter((loc) => loc !== locToRemove);
+      validateField("location");
+      return { ...prev, location: updated };
+    });
   };
 
   const handleReset = () => {
@@ -112,59 +158,56 @@ const UserMaster = () => {
   const handleEdit = (userToEdit) => {
     setEditingUser(userToEdit);
     setFormData(userToEdit);
-    setSelectedLocation("");
     setErrors({});
   };
 
-  // --- Validation function ---
-  const validate = () => {
-    const newErrors = {};
-    const nameRegex = /^[A-Za-z\s]+$/;
-    const codeRegex = /^[0-9]+$/;
+  // Final form validation before save
+  const validateForm = () => {
+    validateField("name", formData.name);
+    validateField("userCode", formData.userCode);
+    validateField("role", formData.role);
+    validateField("location");
 
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    else if (!nameRegex.test(formData.name.trim()))
-      newErrors.name = "Only letters and spaces allowed";
-
-    if (!/^[a-zA-Z0-9]+$/.test(formData.user_code)) {
-  errors.user_code = "User code must be alphanumeric (A–Z, 0–9 only)";
-} else {
-  delete errors.user_code;
-}
-
-    if (!formData.role) newErrors.role = "Select a role";
-    if (formData.location.length === 0)
-      newErrors.location = "Add at least one location";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.values(errors).every((err) => err === "");
   };
 
-  const handleSaveOrUpdate = (e) => {
+  const handleSaveOrUpdate = async (e) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    validateForm();
+    if (Object.values(errors).some((err) => err)) return;
 
-    if (!editing && users.some((u) => u.userCode === formData.userCode)) {
-      setErrors({ userCode: "User Code already exists" });
-      return;
+    const userData = {
+      name: formData.name,
+      userCode: formData.userCode,
+      gender: formData.gender,
+      role: formData.role,
+      location: formData.location,
+    };
+
+    try {
+      if (editing) {
+        // UPDATE
+        const res = await axios.put(`${API}/${formData._id}`, userData);
+
+        setUsers((prev) =>
+          prev.map((u) => (u._id === res.data._id ? res.data : u))
+        );
+
+        alert("User updated successfully!");
+      } else {
+        // CREATE NEW
+        const res = await axios.post(API, userData);
+        setUsers((prev) => [...prev, res.data]);
+
+        alert("User added successfully!");
+      }
+
+      handleReset();
+    } catch (err) {
+      console.log(err);
+      alert("Error saving user!");
     }
-
-    const userData = { ...formData, id: formData.id || Date.now() };
-
-    if (editing) {
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.userCode === editingUser.userCode ? userData : user
-        )
-      );
-      alert(`✅ User ${userData.name} updated successfully!`);
-    } else {
-      setUsers((prev) => [...prev, userData]);
-      alert("✅ New user added successfully!");
-    }
-
-    handleReset();
   };
 
   return (
@@ -172,9 +215,10 @@ const UserMaster = () => {
       <div className="form-card">
         <h2>{editing ? "Update User Details" : "User Master"}</h2>
         <hr />
-        <form onSubmit={handleSaveOrUpdate} onKeyDown={preventEnterSubmit}>
 
+        <form onSubmit={handleSaveOrUpdate} onKeyDown={preventEnterSubmit}>
           <div className="form-grid">
+            {/* NAME */}
             <div>
               <label>Name *</label>
               <input
@@ -182,12 +226,14 @@ const UserMaster = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                
-                placeholder="Enter your name"
+                onBlur={() => validateField("name", formData.name)}
                 className={errors.name ? "input-error" : ""}
+                placeholder="Enter your name"
               />
               {errors.name && <span className="error">{errors.name}</span>}
             </div>
+
+            {/* USER CODE */}
             <div>
               <label>User Code *</label>
               <input
@@ -195,14 +241,18 @@ const UserMaster = () => {
                 name="userCode"
                 value={formData.userCode}
                 onChange={handleInputChange}
-                placeholder="Numeric Value"
+                onBlur={() => validateField("userCode", formData.userCode)}
+                placeholder="Alphanumeric"
                 disabled={editing}
                 className={errors.userCode ? "input-error" : ""}
               />
-              {errors.userCode && <span className="error">{errors.userCode}</span>}
+              {errors.userCode && (
+                <span className="error">{errors.userCode}</span>
+              )}
             </div>
           </div>
 
+          {/* GENDER */}
           <div className="form-grid">
             <div>
               <label>Gender</label>
@@ -224,12 +274,14 @@ const UserMaster = () => {
           </div>
 
           <div className="form-grid">
+            {/* ROLE */}
             <div>
               <label>Role *</label>
               <select
                 name="role"
                 value={formData.role}
                 onChange={handleRoleChange}
+                onBlur={() => validateField("role", formData.role)}
                 className={errors.role ? "input-error" : ""}
               >
                 <option value="">Select a Role</option>
@@ -242,6 +294,7 @@ const UserMaster = () => {
               {errors.role && <span className="error">{errors.role}</span>}
             </div>
 
+            {/* LOCATION */}
             <div className="location-control">
               <label>Location(s) *</label>
               <div className="location-select-add">
@@ -261,45 +314,64 @@ const UserMaster = () => {
                     </option>
                   ))}
                 </select>
+
                 <button
                   type="button"
-                  onClick={handleAddLocation}
                   className="btn-add-loc"
+                  onClick={handleAddLocation}
                   disabled={!selectedLocation}
                 >
                   Add
                 </button>
               </div>
+
               <div className="location-tags">
                 {formData.location.map((loc) => (
                   <span key={loc} className="location-tag">
                     {loc}
-                    <button type="button" onClick={() => handleRemoveLocation(loc)}>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLocation(loc)}
+                    >
                       x
                     </button>
                   </span>
                 ))}
               </div>
-              {errors.location && <span className="error">{errors.location}</span>}
+
+              {errors.location && (
+                <span className="error">{errors.location}</span>
+              )}
             </div>
           </div>
 
+          {/* BUTTONS */}
           <div className="button-group">
             <button
               type="submit"
-              className={`btn-form ${!editing ? "btn-save-mode" : "btn-reset-mode"}`}
+              className={`btn-form ${
+                !editing ? "btn-save-mode" : "btn-reset-mode"
+              }`}
               disabled={editing}
             >
               Save
             </button>
+
             <button
               type="submit"
-              className={`btn-form ${editing ? "btn-update-mode" : "btn-reset-mode"}`}
+              className={`btn-form ${
+                editing ? "btn-update-mode" : "btn-reset-mode"
+              }`}
               disabled={!editing}
             >
               Update
             </button>
-            <button type="button" onClick={handleReset} className="btn-form btn-reset-mode">
+
+            <button
+              type="button"
+              onClick={handleReset}
+              className="btn-form btn-reset-mode"
+            >
               Reset
             </button>
           </div>
