@@ -1,5 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./TeacherClassRate.css";
+import axios from "axios";
+
+
+const API = "http://localhost:5000/api/teacher-class-rates";
 
 const TeacherClassRate = () => {
   const [teacherName, setTeacherName] = useState("");
@@ -16,6 +20,15 @@ const TeacherClassRate = () => {
     subjects: "",
     rates: {},
   });
+
+  useEffect(() => {
+  fetchRates();
+}, []);
+
+const fetchRates = async () => {
+  const res = await axios.get(API);
+  setRates(res.data);
+};
 
   // Filters
   const [filterTeacher, setFilterTeacher] = useState("");
@@ -106,22 +119,22 @@ const TeacherClassRate = () => {
     return noErrors;
   };
 
-  const handleAddRate = () => {
-    if (!validateForm()) return;
+  const handleAddRate = async () => {
+  if (!validateForm()) return;
 
-    const newEntries = Object.entries(subjectRates).map(([subject, rate]) => ({
-      teacherName,
-      classValue,
-      sectionValue,
-      subject,
-      rate: rate.trim(),
-      status: "Active",
-      createdDate: new Date().toLocaleDateString(),
-    }));
+  const payload = Object.entries(subjectRates).map(([subject, rate]) => ({
+    teacherName,
+    classValue,
+    sectionValue,
+    subject,
+    rate: Number(rate),
+    status: "Active",
+  }));
 
-    setRates([...rates, ...newEntries]);
+  try {
+    await axios.post(API, payload);
+    fetchRates();
 
-    // Reset form
     setTeacherName("");
     setClassValue("");
     setSectionValue("");
@@ -133,14 +146,22 @@ const TeacherClassRate = () => {
       subjects: "",
       rates: {},
     });
-  };
+  } catch (err) {
+    alert("Failed to save data");
+  }
+};
 
-  const handleToggleStatus = (index) => {
-    const updatedRates = [...rates];
-    updatedRates[index].status =
-      updatedRates[index].status === "Active" ? "Inactive" : "Active";
-    setRates(updatedRates);
-  };
+
+  const handleToggleStatus = async (id, currentStatus) => {
+  const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+
+  await axios.patch(`${API}/${id}/status`, {
+    status: newStatus,
+  });
+
+  fetchRates();
+};
+
 
   // Filtering
   const filteredRates = rates.filter((rate) => {
@@ -365,7 +386,7 @@ const TeacherClassRate = () => {
                             className={`tcr-status-btn ${
                               rate.status === "Active" ? "deactivate" : "activate"
                             }`}
-                            onClick={() => handleToggleStatus(index)}
+                            onClick={() => handleToggleStatus(rate._id, rate.status)}
                           >
                             {rate.status === "Active" ? "Deactivate" : "Activate"}
                           </button>
