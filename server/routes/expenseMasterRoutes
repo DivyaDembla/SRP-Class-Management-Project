@@ -1,0 +1,43 @@
+const express = require("express");
+const router = express.Router();
+const Expense = require("../models/ExpenseMaster");
+
+/* CREATE */
+router.post("/", async (req, res) => {
+  try {
+    const expense = new Expense(req.body);
+    const savedExpense = await expense.save();
+    res.status(201).json(savedExpense);
+  } catch (err) {
+    console.error("SAVE ERROR:", err);
+    res.status(500).json({ message: "Failed to save expense" });
+  }
+});
+
+/* READ */
+router.get("/", async (req, res) => {
+  try {
+    const expenses = await Expense.find().sort({ createdAt: -1 });
+    res.json(expenses);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch expenses" });
+  }
+});
+
+/* TOGGLE STATUS */
+router.put("/:id/toggle-status", async (req, res) => {
+  try {
+    const expense = await Expense.findById(req.params.id);
+
+    if (!expense) return res.status(404).json({ message: "Not found" });
+
+    expense.status = expense.status === "Active" ? "Inactive" : "Active";
+    await expense.save();
+
+    res.json(expense);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update status" });
+  }
+});
+
+module.exports = router;

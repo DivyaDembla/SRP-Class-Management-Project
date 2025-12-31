@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import CollapsibleCard from "./CollapsibleCard";
 import "./ExpenseMaster.css";
+
+const API = "http://localhost:5000/api/expense-master";
 
 const ExpenseMaster = () => {
   const [formData, setFormData] = useState({
@@ -16,17 +19,29 @@ const ExpenseMaster = () => {
 
   const [expenseList, setExpenseList] = useState([]);
 
-  // --- Handle Input + Remove Error Instantly ---
+  /* ---------------- FETCH EXPENSES ---------------- */
+  useEffect(() => {
+    fetchExpenses();
+  }, []);
+
+  const fetchExpenses = async () => {
+    try {
+      const res = await axios.get(API);
+      setExpenseList(res.data);
+    } catch (err) {
+      console.error("Error fetching expenses", err);
+    }
+  };
+
+  /* ---------------- INPUT HANDLER ---------------- */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // remove error for this field
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // --- Validate Form ---
+  /* ---------------- VALIDATION ---------------- */
   const validateForm = () => {
     let newErrors = {};
 
@@ -39,24 +54,30 @@ const ExpenseMaster = () => {
     }
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
+  /* ---------------- SAVE EXPENSE ---------------- */
+  const handleSave = async () => {
     if (!validateForm()) return;
 
-    const newExpense = { ...formData, id: Date.now() };
-    setExpenseList((prev) => [...prev, newExpense]);
+    try {
+      const res = await axios.post(API, formData);
 
-    // reset
-    setFormData({
-      expenseType: "",
-      expenseDescription: "",
-      status: "Active",
-    });
+      setExpenseList((prev) => [res.data, ...prev]);
+
+      setFormData({
+        expenseType: "",
+        expenseDescription: "",
+        status: "Active",
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save expense");
+    }
   };
 
+  /* ---------------- RESET ---------------- */
   const handleReset = () => {
     setFormData({
       expenseType: "",
@@ -66,14 +87,17 @@ const ExpenseMaster = () => {
     setErrors({});
   };
 
-  const handleStatusToggle = (id) => {
-    setExpenseList((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, status: item.status === "Active" ? "Inactive" : "Active" }
-          : item
-      )
-    );
+  /* ---------------- TOGGLE STATUS ---------------- */
+  const handleStatusToggle = async (id) => {
+    try {
+      const res = await axios.put(`${API}/${id}/toggle-status`);
+
+      setExpenseList((prev) =>
+        prev.map((item) => (item._id === id ? res.data : item))
+      );
+    } catch (err) {
+      console.error("Toggle error", err);
+    }
   };
 
   return (
@@ -101,8 +125,7 @@ const ExpenseMaster = () => {
                 value={formData.expenseDescription}
                 onChange={handleInputChange}
                 rows="1"
-                placeholder="Description"
-              ></textarea>
+              />
               {errors.expenseDescription && (
                 <p className="error-text">{errors.expenseDescription}</p>
               )}
@@ -132,10 +155,11 @@ const ExpenseMaster = () => {
         </form>
       </CollapsibleCard>
 
-      {/* List */}
+      {/* ---------------- LIST ---------------- */}
       <div className="list-card">
         <h2>Expense Type List Grid</h2>
         <hr />
+
         <div className="table-container">
           <table>
             <thead>
@@ -147,29 +171,38 @@ const ExpenseMaster = () => {
                 <th>Activate / Deactivate</th>
               </tr>
             </thead>
+
             <tbody>
-              {expenseList.map((expense) => (
-                <tr key={expense.id}>
-                  <td>{expense.expenseType}</td>
-                  <td>{expense.expenseDescription}</td>
-                  <td>{expense.status}</td>
-                  <td>
-                    <button className="btn-edit">Edit</button>
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => handleStatusToggle(expense.id)}
-                      className={`btn-toggle ${
-                        expense.status === "Active"
-                          ? "deactivate"
-                          : "activate"
-                      }`}
-                    >
-                      {expense.status === "Active" ? "Deactivate" : "Activate"}
-                    </button>
-                  </td>
+              {expenseList.length > 0 ? (
+                expenseList.map((expense) => (
+                  <tr key={expense._id}>
+                    <td>{expense.expenseType}</td>
+                    <td>{expense.expenseDescription}</td>
+                    <td>{expense.status}</td>
+                    <td>
+                      <button className="btn-edit">Edit</button>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleStatusToggle(expense._id)}
+                        className={`btn-toggle ${
+                          expense.status === "Active"
+                            ? "deactivate"
+                            : "activate"
+                        }`}
+                      >
+                        {expense.status === "Active"
+                          ? "Deactivate"
+                          : "Activate"}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5">No expenses found</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

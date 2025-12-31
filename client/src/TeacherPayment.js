@@ -1,5 +1,9 @@
 import React, { useState, useMemo } from "react";
 import "./TeacherPayment.css";
+import axios from "axios";
+
+const API = "http://localhost:5000/api/teacher-payments";
+
 
 // --- Inline SVG Icons ---
 const DownloadIcon = (props) => (
@@ -151,44 +155,44 @@ const TeacherPayment = () => {
     }, 1000);
   };
 
-  const handleSavePayment = () => {
-    if (paymentSummary.length === 0) {
-      openModal(
-        "Data Missing",
-        "Please fetch payment details first before saving."
-      );
-      return;
-    }
+  const handleSavePayment = async () => {
+  if (paymentSummary.length === 0) {
+    openModal("Data Missing", "Please fetch payment details first.");
+    return;
+  }
 
-    const isSingle = paymentType === "Single Teacher Payment";
-    const name = isSingle
+  const isSingle = paymentType === "Single Teacher Payment";
+
+  const payload = {
+    teacherName: isSingle
       ? paymentSummary[0].name
-      : `Bulk Payment for ${selectedMonth}`;
-    const totalLectures = isSingle
+      : `Bulk Payment (${selectedMonth})`,
+    month: selectedMonth,
+    paymentType,
+    totalLectures: isSingle
       ? paymentSummary[0].totalLectures
-      : paymentSummary.reduce((sum, item) => sum + item.totalLectures, 0);
+      : paymentSummary.reduce((s, i) => s + i.totalLectures, 0),
+    ratePerLecture: ratePerLecture,
+    totalAmount: totalPayableAmount,
+  };
 
-    const newReportEntry = {
-      name,
-      totalLectures,
-      totalAmount: totalPayableAmount,
-      status: "Pending",
-      reportDate: selectedMonth,
-    };
+  try {
+    const res = await axios.post(API, payload);
 
-    setPaymentReport((prev) => [newReportEntry, ...prev]);
+    setPaymentReport((prev) => [res.data, ...prev]);
 
-    openModal(
-      "Payment Saved",
-      `Payment for ${newReportEntry.name} successfully saved.`
-    );
+    openModal("Payment Saved", "Payment saved successfully!");
 
     setPaymentSummary([]);
     setFetchedLectures(null);
     setSelectedMonth("");
     setPaymentType("Single Teacher Payment");
-    setErrors({ selectedMonth: "", paymentType: "" });
-  };
+  } catch (err) {
+    console.error(err);
+    openModal("Error", "Failed to save payment");
+  }
+};
+
 
   const handleMarkAsPaid = (index) => {
     setPaymentReport((prev) =>

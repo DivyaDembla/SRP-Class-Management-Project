@@ -1,5 +1,8 @@
 import React, { useState, useRef } from "react";
 import "./IncomeEntryScreen.css";
+import axios from "axios";
+
+const API = "http://localhost:5000/api/income-entries";
 
 const IncomeEntryScreen = () => {
   const [incomeCategory, setIncomeCategory] = useState("Student Fee");
@@ -43,39 +46,35 @@ const IncomeEntryScreen = () => {
     setErrors((prev) => ({ ...prev, [field]: msg }));
   };
 
-  const handleSave = () => {
-    const fields = {
-      date,
-      amount,
-      paymentMode,
-      documentFile,
-      studentName,
-      feeType,
-      remarks,
-    };
+  const handleSave = async () => {
+  const payload = {
+    incomeCategory,
+    date,
+    studentName,
+    classSection,
+    feeType,
+    amount,
+    paymentMode,
+    physicalReceipt,
+    remarks,
+    documentName: documentFile ? documentFile.name : "",
+  };
 
-    // Validate all fields
-    Object.keys(fields).forEach((key) => validateField(key, fields[key]));
+  // validate required fields
+  Object.keys(payload).forEach((key) =>
+    validateField(key, payload[key])
+  );
 
-    // Stop if any error
-    const hasError = Object.values(errors).some((e) => e);
-    if (hasError) return;
+  if (Object.values(errors).some((e) => e)) return;
 
-    const newEntry = {
-      date,
-      type: incomeCategory,
-      student: studentName || "N/A",
-      head: incomeCategory === "Other Income" ? remarks : "N/A",
-      amount,
-      paymentMode,
-      physicalReceipt,
-      remarks,
-      voucher: "N/A",
-    };
+  try {
+    const res = await axios.post(API, payload);
+    //alert(" Income entry saved successfully");
 
-    setIncomeEntries([...incomeEntries, newEntry]);
+    // add saved record to table
+    setIncomeEntries((prev) => [res.data, ...prev]);
 
-    // Reset
+    // reset form
     setIncomeCategory("Student Fee");
     setDate("");
     setStudentName("");
@@ -87,7 +86,12 @@ const IncomeEntryScreen = () => {
     setRemarks("");
     setDocumentFile(null);
     setErrors({});
-  };
+  } catch (err) {
+    console.error("SAVE ERROR:", err.response?.data || err.message);
+    //alert(" Failed to save income entry");
+  }
+};
+
 
   const handleUploadClick = () => {
     fileInputRef.current.click();

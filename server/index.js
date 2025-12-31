@@ -41,8 +41,17 @@ app.use("/api/class-groups", require("./routes/classGroupRoutes"));
 //Teacher master
 app.use("/api/teachers", require("./routes/teacherRoutes"));
 
-//Expense master
+//Expense 
 app.use("/api/expenses", require("./routes/expenseRoutes"));
+
+//Teacher Payment master
+app.use("/api/teacher-payments", require("./routes/teacherPaymentRoutes"));
+
+//Expense Master
+app.use("/api/expense-master", require("./routes/expenseMasterRoutes"));
+
+//Income Entry
+app.use("/api/income-entries", require("./routes/incomeEntryRoutes"));
 
 // ----------- Server Start -----------
 const PORT = process.env.PORT || 5000;
