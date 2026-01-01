@@ -1,6 +1,10 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 import CollapsibleCard from "./CollapsibleCard";
 import "./TimeTableManagement.css";
+import axios from "axios";
+
+const API = "http://localhost:5000/api/timetable";
 
 export default function TimetableManagement() {
   const [timetables, setTimetables] = useState([]);
@@ -14,7 +18,21 @@ export default function TimetableManagement() {
   });
 
   const [errors, setErrors] = useState({});
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
+  useEffect(() => {
+  fetchTimetables();
+}, []);
+
+const fetchTimetables = async () => {
+  try {
+    const res = await axios.get(API);
+    setTimetables(res.data);
+  } catch (err) {
+    console.error("Failed to fetch timetables", err);
+    //alert("Failed to fetch timetables");
+  }
+};
+
 
   // VALIDATION FUNCTION
   const validateForm = () => {
@@ -47,33 +65,61 @@ export default function TimetableManagement() {
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleSave = (e) => {
-    e.preventDefault();
+  const handleSave = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    if (!validateForm()) return;
-
-    if (editIndex !== null) {
-      const updated = [...timetables];
-      updated[editIndex] = formData;
-      setTimetables(updated);
-      setEditIndex(null);
+  try {
+    if (editId) {
+      await axios.put(`${API}/${editId}`, formData);
+     // alert("Timetable updated ✅");
     } else {
-      setTimetables([...timetables, formData]);
+      await axios.post(API, formData);
+      //alert("Timetable saved ✅");
     }
+    setFormData({
+      className: "",
+      day: "",
+      timeFrom: "",
+      timeTo: "",
+      subject: "",
+      teacher: "",
+    });
+    setEditId(null);
+    fetchTimetables();
+  } catch (err) {
+    console.error(err);
+   // alert("Failed to save timetable ❌");
+  }
+};
 
-    handleReset();
-  };
 
-  const handleEdit = (index) => {
-    setFormData(timetables[index]);
-    setEditIndex(index);
-    setErrors({});
-  };
+  const handleEdit = (timetable) => {
+  setFormData({
+    className: timetable.className,
+    day: timetable.day,
+    timeFrom: timetable.timeFrom,
+    timeTo: timetable.timeTo,
+    subject: timetable.subject,
+    teacher: timetable.teacher,
+  });
+  setEditId(timetable._id);
+  setErrors({});
+};
 
-  const handleDelete = (index) => {
-    const updated = timetables.filter((_, i) => i !== index);
-    setTimetables(updated);
-  };
+
+  const handleDelete = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this timetable?")) return;
+  try {
+    await axios.delete(`${API}/${id}`);
+   // alert("Timetable deleted ✅");
+    fetchTimetables();
+  } catch (err) {
+    console.error(err);
+   // alert("Failed to delete ❌");
+  }
+};
+
 
   const handleReset = () => {
     setFormData({
@@ -85,7 +131,7 @@ export default function TimetableManagement() {
       teacher: "",
     });
     setErrors({});
-    setEditIndex(null);
+    setEditId(null);
   };
 
   return (
@@ -194,7 +240,7 @@ export default function TimetableManagement() {
 
           <div className="form-group buttons-group">
             <button type="submit" className="save-btn">
-              {editIndex !== null ? "Update" : "Save"}
+              {editId !== null ? "Update" : "Save"}
             </button>
             <button type="button" onClick={handleReset} className="delete-btn">
               Reset
@@ -223,35 +269,35 @@ export default function TimetableManagement() {
               <tr>
                 <td colSpan="7" className="timeTable-no-data">
                   No records found
-                </td>
-              </tr>
-            ) : (
-              timetables.map((row, index) => (
-                <tr key={index}>
-                  <td>{row.className}</td>
-                  <td>{row.day}</td>
-                  <td>{row.timeFrom}</td>
-                  <td>{row.timeTo}</td>
-                  <td>{row.subject}</td>
-                  <td>{row.teacher}</td>
-                  <td>
-                    <button
-                      onClick={() => handleEdit(index)}
-                      className="save-btn"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(index)}
-                      className="delete-btn"
-                    >
-                      Delete
-                    </button>
                   </td>
-                </tr>
-              ))
-            )}
-          </tbody>
+                  </tr>
+                  ) : (
+    timetables.map((row) => (
+      <tr key={row._id}>
+        <td>{row.className}</td>
+        <td>{row.day}</td>
+        <td>{row.timeFrom}</td>
+        <td>{row.timeTo}</td>
+        <td>{row.subject}</td>
+        <td>{row.teacher}</td>
+        <td>
+          <button
+            onClick={() => handleEdit(row)}
+            className="save-btn"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => handleDelete(row._id)}
+            className="delete-btn"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
         </table>
       </div>
     </div>
