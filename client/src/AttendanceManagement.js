@@ -63,7 +63,7 @@ export default function AttendanceManagement() {
     setHoliday(res.data?.holiday || false);
 
   } catch (err) {
-    alert("Failed to fetch attendance");
+    //alert("Failed to fetch attendance");
     // fallback default list
     setStudents([
       { rollNo: 1, name: "Amit Kumar", attendance: "Present" },
@@ -104,9 +104,9 @@ export default function AttendanceManagement() {
       students,
     });
 
-    alert("Attendance saved successfully ✅");
+    //alert("Attendance saved successfully ✅");
   } catch (err) {
-    alert("Failed to save attendance ❌");
+    //alert("Failed to save attendance ❌");
   }
 };
 
