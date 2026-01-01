@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import "./AttendanceManagement.css";
+import axios from "axios";
+
+const API = "http://localhost:5000/api/attendance";
 
 export default function AttendanceManagement() {
   const [students, setStudents] = useState([]);
@@ -39,19 +42,47 @@ export default function AttendanceManagement() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const fetchStudents = () => {
-    if (!validateFields()) return;
+  const fetchStudents = async () => {
+  if (!validateFields()) return;
 
-    const mockStudents = [
+  try {
+    const res = await axios.get(API, {
+      params: {
+        date: formData.date,
+        className: formData.className,
+        section: formData.section,
+      },
+    });
+
+    const fetchedStudents = res.data?.students || [
       { rollNo: 1, name: "Amit Kumar", attendance: "Present" },
       { rollNo: 2, name: "Sneha Sharma", attendance: "Present" },
     ];
-    setStudents(mockStudents);
-  };
+
+    setStudents(fetchedStudents);
+    setHoliday(res.data?.holiday || false);
+
+  } catch (err) {
+    alert("Failed to fetch attendance");
+    // fallback default list
+    setStudents([
+      { rollNo: 1, name: "Amit Kumar", attendance: "Present" },
+      { rollNo: 2, name: "Sneha Sharma", attendance: "Present" },
+    ]);
+    setHoliday(false);
+  }
+};
+
+
 
   const markAll = (status) => {
-    setStudents((prev) => prev.map((s) => ({ ...s, attendance: status })));
-  };
+  if (holiday) return;
+
+  setStudents((prev) =>
+    prev.map((s) => ({ ...s, attendance: status }))
+  );
+};
+
 
   const handleAttendanceChange = (index, value) => {
     const updated = [...students];
@@ -59,11 +90,26 @@ export default function AttendanceManagement() {
     setStudents(updated);
   };
 
-  const saveAttendance = () => {
-    if (!validateFields()) return;
+  const saveAttendance = async () => {
+  if (!validateFields()) return;
 
-    console.log("Saved Attendance:", students);
-  };
+  try {
+    await axios.post(API, {
+      academicYear: formData.academicYear,
+      month: formData.month,
+      className: formData.className,
+      section: formData.section,
+      date: formData.date,
+      holiday,
+      students,
+    });
+
+    alert("Attendance saved successfully ✅");
+  } catch (err) {
+    alert("Failed to save attendance ❌");
+  }
+};
+
 
   return (
     <div className="attendance-container">
@@ -177,15 +223,14 @@ export default function AttendanceManagement() {
                   <td>{s.rollNo}</td>
                   <td>{s.name}</td>
                   <td>
-                    <select
-                      value={s.attendance}
-                      onChange={(e) =>
-                        handleAttendanceChange(i, e.target.value)
-                      }
-                    >
-                      <option value="Present">Present</option>
-                      <option value="Absent">Absent</option>
-                    </select>
+                  <select
+                  value={s.attendance}
+                  disabled={holiday}
+                  onChange={(e) => handleAttendanceChange(i, e.target.value)}
+                >
+                  <option value="Present">Present</option>
+                  <option value="Absent">Absent</option>
+                </select>
                   </td>
                 </tr>
               ))

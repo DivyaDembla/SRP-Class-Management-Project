@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import CollapsibleCard from "./CollapsibleCard";
 import "./LectureEntrySystem.css";
+import axios from "axios";
+
+const API = "http://localhost:5000/api/lecture-entry";
+
 
 const LectureEntrySystem = () => {
   const [teacher] = useState("Auto generated");
@@ -14,6 +18,15 @@ const LectureEntrySystem = () => {
   const [timeTo, setTimeTo] = useState("");
   const [remarks, setRemarks] = useState("");
   const [timetable, setTimetable] = useState([]);
+
+  React.useEffect(() => {
+  fetchLectures();
+}, []);
+
+const fetchLectures = async () => {
+  const res = await axios.get(API);
+  setTimetable(res.data);
+};
 
   // ERROR STATE
   const [errors, setErrors] = useState({});
@@ -71,37 +84,43 @@ const LectureEntrySystem = () => {
 
   // VALIDATE ENTIRE FORM
   const validateForm = () => {
-    const fields = [
-      "date",
-      "className",
-      "section",
-      "subject",
-      "chapterName",
-      "timeFrom",
-      "timeTo",
-    ];
-    return fields.every((f) => validateField(f, eval(f)));
+  const values = {
+    date,
+    className,
+    section,
+    subject,
+    chapterName,
+    timeFrom,
+    timeTo,
   };
 
-  const handleSave = () => {
-    if (!validateForm()) return;
+  return Object.keys(values).every((field) =>
+    validateField(field, values[field])
+  );
+};
 
-    const newEntry = {
-      className,
-      section,
-      date,
-      subject,
-      chapterName,
-      teacher,
-      topicDescription,
-      timeFrom,
-      timeTo,
-      remarks,
-    };
 
-    setTimetable([...timetable, newEntry]);
+  const handleSave = async () => {
+  if (!validateForm()) return;
 
-    // reset form
+  const payload = {
+    teacher,
+    date,
+    className,
+    section,
+    subject,
+    chapterName,
+    topicDescription,
+    timeFrom,
+    timeTo,
+    remarks,
+  };
+
+  try {
+    const res = await axios.post(API, payload);
+    setTimetable((prev) => [res.data, ...prev]);
+
+    // reset
     setDate("");
     setClassName("");
     setSection("");
@@ -112,11 +131,17 @@ const LectureEntrySystem = () => {
     setTimeTo("");
     setRemarks("");
     setErrors({});
-  };
+  } catch (err) {
+    alert("Failed to save lecture");
+  }
+};
 
-  const handleDelete = (index) => {
-    setTimetable(timetable.filter((_, i) => i !== index));
-  };
+
+  const handleDelete = async (id) => {
+  await axios.delete(`${API}/${id}`);
+  fetchLectures();
+};
+
 
   return (
     <div className="lecture-content">
@@ -318,7 +343,7 @@ const LectureEntrySystem = () => {
                   <td>{entry.teacher}</td>
                   <td>
                     <button
-                      onClick={() => handleDelete(index)}
+                    onClick={() => handleDelete(entry._id)}
                       className="delete-btn"
                     >
                       Delete
