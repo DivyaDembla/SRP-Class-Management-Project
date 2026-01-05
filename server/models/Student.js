@@ -21,7 +21,11 @@ const StudentSchema = new mongoose.Schema(
     documentFile: String,
     studentPhoto: String,
 
-    status: { type: String, default: "Active" },
+    status: {
+      type: String,
+      enum: ["Active", "Inactive"],
+      default: "Active",
+    },
   },
   { timestamps: true }
 );

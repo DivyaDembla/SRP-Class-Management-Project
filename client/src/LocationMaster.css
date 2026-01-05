@@ -110,3 +110,36 @@
   margin-top: 2px;
   display: block;
 }
+/* ---- Table ---- */
+.table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.location-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.location-table th {
+  background: #f9fafb;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.location-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.location-table tr:hover {
+  background-color: #f9fafb;
+}
+
+.no-data {
+  text-align: center;
+  color: #6b7280;
+  padding: 1rem;
+}

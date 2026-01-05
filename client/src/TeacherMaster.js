@@ -8,7 +8,7 @@ const API = "http://localhost:5000/api/teachers";
 
 export default function TeacherMaster() {
   const [teachers, setTeachers] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -62,6 +62,26 @@ export default function TeacherMaster() {
 
     // Clear error instantly
     setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const toggleStatus = async (teacher) => {
+    try {
+      const formData = new FormData();
+      formData.append(
+        "status",
+        teacher.status === "Active" ? "Inactive" : "Active"
+      );
+
+      const res = await axios.put(`${API}/${teacher._id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setTeachers((prev) =>
+        prev.map((t) => (t._id === teacher._id ? res.data : t))
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // ---------------------------
@@ -270,12 +290,28 @@ export default function TeacherMaster() {
         }
       });
 
-      const res = await axios.post(API, formDataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      let res;
 
-      // Add to table instantly
-      setTeachers((prev) => [...prev, res.data]);
+      if (editingId) {
+        // ✅ UPDATE
+        res = await axios.put(`${API}/${editingId}`, formDataToSend, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        setTeachers((prev) =>
+          prev.map((t) => (t._id === editingId ? res.data : t))
+        );
+
+        alert("Teacher Updated Successfully!");
+      } else {
+        // ✅ CREATE
+        res = await axios.post(API, formDataToSend, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        setTeachers((prev) => [...prev, res.data]);
+        alert("Teacher Saved Successfully!");
+      }
 
       alert("Teacher Saved Successfully!");
 
@@ -305,19 +341,22 @@ export default function TeacherMaster() {
       fileName: "Upload Files",
     });
     setErrors({});
-    setEditingIndex(null);
+    setEditingId(null);
   };
 
   // ---------------------------
   // Edit / Delete
   // ---------------------------
-  const editTeacher = (index) => {
-    setEditingIndex(index);
-    setFormData(teachers[index]);
+  const editTeacher = (teacher) => {
+    setEditingId(teacher._id); // 🔥 THIS fixes update
+    setFormData({
+      ...teacher,
+      subjects: teacher.subjects || [""],
+      classes: teacher.classes || [],
+      batches: teacher.batches || [],
+      fileName: teacher.fileName || "Upload Files",
+    });
   };
-
-  const deleteTeacher = (index) =>
-    setTeachers((prev) => prev.filter((_, i) => i !== index));
 
   // ---------------------------
   // JSX with red border on errors
@@ -326,7 +365,7 @@ export default function TeacherMaster() {
 
   return (
     <div className="teachermaster-content">
-      <CollapsibleCard title="Teacher Details" defaultOpen={true}>
+      <CollapsibleCard title="Teacher Details" defaultOpen={false}>
         <form onSubmit={handleSubmit}>
           <div className="grid">
             <div>
@@ -534,7 +573,7 @@ export default function TeacherMaster() {
 
           <div className="actions">
             <button type="submit" className="btn-primary">
-              {editingIndex !== null ? "Update" : "Save"}
+              {editingId ? "Update" : "Save"}
             </button>
 
             <button type="button" onClick={resetForm} className="btn-danger">
@@ -573,16 +612,19 @@ export default function TeacherMaster() {
                   <td>{teacher.joiningDate}</td>
                   <td>
                     <button
-                      onClick={() => editTeacher(index)}
-                      className="btn-icon"
+                      className="btn-link"
+                      onClick={() => editTeacher(teacher)}
                     >
-                      ✎
+                      Edit
                     </button>
+
                     <button
-                      onClick={() => deleteTeacher(index)}
-                      className="btn-icon"
+                      className={`btn-status ${
+                        teacher.status === "Active" ? "deactivate" : "activate"
+                      }`}
+                      onClick={() => toggleStatus(teacher)}
                     >
-                      🗑
+                      {teacher.status === "Active" ? "Deactivate" : "Activate"}
                     </button>
                   </td>
                 </tr>

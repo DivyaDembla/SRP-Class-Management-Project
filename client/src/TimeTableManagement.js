@@ -1,13 +1,15 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import CollapsibleCard from "./CollapsibleCard";
 import "./TimeTableManagement.css";
 import axios from "axios";
 
 const API = "http://localhost:5000/api/timetable";
+const TEACHER_API = "http://localhost:5000/api/teachers";
 
 export default function TimetableManagement() {
+  const [teachers, setTeachers] = useState([]);
   const [timetables, setTimetables] = useState([]);
+
   const [formData, setFormData] = useState({
     className: "",
     day: "",
@@ -19,22 +21,32 @@ export default function TimetableManagement() {
 
   const [errors, setErrors] = useState({});
   const [editId, setEditId] = useState(null);
+
+  // ---------------- FETCH ON LOAD ----------------
   useEffect(() => {
-  fetchTimetables();
-}, []);
+    fetchTimetables();
+    fetchTeachers(); // 🔥 IMPORTANT
+  }, []);
 
-const fetchTimetables = async () => {
-  try {
-    const res = await axios.get(API);
-    setTimetables(res.data);
-  } catch (err) {
-    console.error("Failed to fetch timetables", err);
-    //alert("Failed to fetch timetables");
-  }
-};
+  const fetchTeachers = async () => {
+    try {
+      const res = await axios.get(TEACHER_API);
+      setTeachers(res.data);
+    } catch (err) {
+      console.error("Failed to fetch teachers", err);
+    }
+  };
 
+  const fetchTimetables = async () => {
+    try {
+      const res = await axios.get(API);
+      setTimetables(res.data);
+    } catch (err) {
+      console.error("Failed to fetch timetables", err);
+    }
+  };
 
-  // VALIDATION FUNCTION
+  // ---------------- VALIDATION ----------------
   const validateForm = () => {
     const newErrors = {};
 
@@ -45,83 +57,71 @@ const fetchTimetables = async () => {
     if (!formData.subject) newErrors.subject = "Choose a subject.";
     if (!formData.teacher) newErrors.teacher = "Choose a teacher.";
 
-    // check if timeFrom < timeTo
-    if (formData.timeFrom && formData.timeTo) {
-      if (formData.timeFrom >= formData.timeTo) {
-        newErrors.timeTo = "End time must be later than start time.";
-      }
+    if (
+      formData.timeFrom &&
+      formData.timeTo &&
+      formData.timeFrom >= formData.timeTo
+    ) {
+      newErrors.timeTo = "End time must be later than start time.";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // ---------------- INPUT CHANGE ----------------
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // remove error instantly when corrected
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // ---------------- SAVE / UPDATE ----------------
   const handleSave = async (e) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+    e.preventDefault();
+    if (!validateForm()) return;
 
-  try {
-    if (editId) {
-      await axios.put(`${API}/${editId}`, formData);
-     // alert("Timetable updated ✅");
-    } else {
-      await axios.post(API, formData);
-      //alert("Timetable saved ✅");
+    try {
+      if (editId) {
+        await axios.put(`${API}/${editId}`, formData);
+        alert("Timetable updated successfully ✅");
+      } else {
+        await axios.post(API, formData);
+        alert("Timetable saved successfully ✅");
+      }
+
+      resetForm();
+      fetchTimetables();
+    } catch (err) {
+      console.error("Failed to save timetable", err);
     }
+  };
+
+  // ---------------- EDIT ----------------
+  const handleEdit = (row) => {
     setFormData({
-      className: "",
-      day: "",
-      timeFrom: "",
-      timeTo: "",
-      subject: "",
-      teacher: "",
+      className: row.className,
+      day: row.day,
+      timeFrom: row.timeFrom,
+      timeTo: row.timeTo,
+      subject: row.subject,
+      teacher: row.teacher,
     });
-    setEditId(null);
-    fetchTimetables();
-  } catch (err) {
-    console.error(err);
-   // alert("Failed to save timetable ❌");
-  }
-};
+    setEditId(row._id);
+    setErrors({});
+  };
 
+  // ---------------- DEACTIVATE ----------------
+  const handleToggle = async (id) => {
+    const res = await axios.patch(`${API}/${id}/toggle`);
 
-  const handleEdit = (timetable) => {
-  setFormData({
-    className: timetable.className,
-    day: timetable.day,
-    timeFrom: timetable.timeFrom,
-    timeTo: timetable.timeTo,
-    subject: timetable.subject,
-    teacher: timetable.teacher,
-  });
-  setEditId(timetable._id);
-  setErrors({});
-};
+    setTimetables((prev) =>
+      prev.map((t) => (t._id === res.data._id ? res.data : t))
+    );
+  };
 
-
-  const handleDelete = async (id) => {
-  if (!window.confirm("Are you sure you want to delete this timetable?")) return;
-  try {
-    await axios.delete(`${API}/${id}`);
-   // alert("Timetable deleted ✅");
-    fetchTimetables();
-  } catch (err) {
-    console.error(err);
-   // alert("Failed to delete ❌");
-  }
-};
-
-
-  const handleReset = () => {
+  // ---------------- RESET ----------------
+  const resetForm = () => {
     setFormData({
       className: "",
       day: "",
@@ -134,11 +134,11 @@ const fetchTimetables = async () => {
     setEditId(null);
   };
 
+  // ---------------- UI ----------------
   return (
     <div className="timeTable-content">
       <CollapsibleCard title="Create / Manage Timetable" defaultOpen={false}>
         <form onSubmit={handleSave} className="form-row">
-
           {/* CLASS */}
           <div className="form-group">
             <label>Class</label>
@@ -165,13 +165,17 @@ const fetchTimetables = async () => {
               <option value="" disabled hidden>
                 Select Day
               </option>
-              <option value="Monday">Monday</option>
-              <option value="Tuesday">Tuesday</option>
-              <option value="Wednesday">Wednesday</option>
-              <option value="Thursday">Thursday</option>
-              <option value="Friday">Friday</option>
-              <option value="Saturday">Saturday</option>
-              <option value="Sunday">Sunday</option>
+              {[
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday",
+              ].map((d) => (
+                <option key={d}>{d}</option>
+              ))}
             </select>
             {errors.day && <p className="error-text">{errors.day}</p>}
           </div>
@@ -185,9 +189,7 @@ const fetchTimetables = async () => {
               value={formData.timeFrom}
               onChange={handleChange}
             />
-            {errors.timeFrom && (
-              <p className="error-text">{errors.timeFrom}</p>
-            )}
+            {errors.timeFrom && <p className="error-text">{errors.timeFrom}</p>}
           </div>
 
           {/* TIME TO */}
@@ -199,9 +201,7 @@ const fetchTimetables = async () => {
               value={formData.timeTo}
               onChange={handleChange}
             />
-            {errors.timeTo && (
-              <p className="error-text">{errors.timeTo}</p>
-            )}
+            {errors.timeTo && <p className="error-text">{errors.timeTo}</p>}
           </div>
 
           {/* SUBJECT */}
@@ -221,7 +221,7 @@ const fetchTimetables = async () => {
             {errors.subject && <p className="error-text">{errors.subject}</p>}
           </div>
 
-          {/* TEACHER */}
+          {/* TEACHER (FROM BACKEND) */}
           <div className="form-group">
             <label>Teacher</label>
             <select
@@ -232,17 +232,24 @@ const fetchTimetables = async () => {
               <option value="" disabled hidden>
                 Select Teacher
               </option>
-              <option value="Mr. Sharma">Mr. Sharma</option>
-              <option value="Ms. Gupta">Ms. Gupta</option>
+
+              {teachers
+                .filter((t) => t.status === "Active")
+                .map((t) => (
+                  <option key={t._id} value={t.fullName}>
+                    {t.fullName}
+                  </option>
+                ))}
             </select>
             {errors.teacher && <p className="error-text">{errors.teacher}</p>}
           </div>
 
+          {/* BUTTONS */}
           <div className="form-group buttons-group">
             <button type="submit" className="save-btn">
-              {editId !== null ? "Update" : "Save"}
+              {editId ? "Update" : "Save"}
             </button>
-            <button type="button" onClick={handleReset} className="delete-btn">
+            <button type="button" onClick={resetForm} className="delete-btn">
               Reset
             </button>
           </div>
@@ -252,6 +259,7 @@ const fetchTimetables = async () => {
       {/* LIST */}
       <div className="timeTable-list">
         <h3>Timetable List</h3>
+
         <table>
           <thead>
             <tr>
@@ -264,40 +272,51 @@ const fetchTimetables = async () => {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {timetables.length === 0 ? (
               <tr>
                 <td colSpan="7" className="timeTable-no-data">
                   No records found
+                </td>
+              </tr>
+            ) : (
+              timetables.map((row) => (
+                <tr key={row._id}>
+                  <td>{row.className}</td>
+                  <td>{row.day}</td>
+                  <td>{row.timeFrom}</td>
+                  <td>{row.timeTo}</td>
+                  <td>{row.subject}</td>
+                  <td>{row.teacher}</td>
+                  <td className="action-cell">
+                    <span
+                      className="action-edit"
+                      onClick={() => handleEdit(row)}
+                    >
+                      Edit
+                    </span>
+
+                    {row.status === "Active" ? (
+                      <button
+                        className="btn-deactivate"
+                        onClick={() => handleToggle(row._id)}
+                      >
+                        Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-activate"
+                        onClick={() => handleToggle(row._id)}
+                      >
+                        Activate
+                      </button>
+                    )}
                   </td>
-                  </tr>
-                  ) : (
-    timetables.map((row) => (
-      <tr key={row._id}>
-        <td>{row.className}</td>
-        <td>{row.day}</td>
-        <td>{row.timeFrom}</td>
-        <td>{row.timeTo}</td>
-        <td>{row.subject}</td>
-        <td>{row.teacher}</td>
-        <td>
-          <button
-            onClick={() => handleEdit(row)}
-            className="save-btn"
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => handleDelete(row._id)}
-            className="delete-btn"
-          >
-            Delete
-          </button>
-        </td>
-      </tr>
-    ))
-  )}
-</tbody>
+                </tr>
+              ))
+            )}
+          </tbody>
         </table>
       </div>
     </div>

@@ -62,7 +62,12 @@ const ExpenseMaster = () => {
     if (!validateForm()) return;
 
     try {
-      const res = await axios.post(API, formData);
+      const payload = {
+        ...formData,
+        status: "Active", // ✅ FORCE DEFAULT
+      };
+
+      const res = await axios.post(API, payload);
 
       setExpenseList((prev) => [res.data, ...prev]);
 
@@ -167,8 +172,7 @@ const ExpenseMaster = () => {
                 <th>Expense Type</th>
                 <th>Description</th>
                 <th>Status</th>
-                <th>Edit</th>
-                <th>Activate / Deactivate</th>
+                <th>Actions </th>
               </tr>
             </thead>
 
@@ -179,10 +183,9 @@ const ExpenseMaster = () => {
                     <td>{expense.expenseType}</td>
                     <td>{expense.expenseDescription}</td>
                     <td>{expense.status}</td>
-                    <td>
+                    <td className="action-buttons">
                       <button className="btn-edit">Edit</button>
-                    </td>
-                    <td>
+
                       <button
                         onClick={() => handleStatusToggle(expense._id)}
                         className={`btn-toggle ${
@@ -200,7 +203,7 @@ const ExpenseMaster = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5">No expenses found</td>
+                  <td colSpan="4">No expenses found</td>
                 </tr>
               )}
             </tbody>

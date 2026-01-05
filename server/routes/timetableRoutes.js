@@ -42,13 +42,28 @@ router.put("/:id", async (req, res) => {
 });
 
 /* ==============================
-   DELETE a timetable by ID
+   Update a timetable by ID
 ============================== */
-router.delete("/:id", async (req, res) => {
+// TOGGLE ACTIVE / INACTIVE
+router.patch("/:id/toggle", async (req, res) => {
   try {
-    await Timetable.findByIdAndDelete(req.params.id);
-    res.json({ message: "Timetable deleted successfully" });
+    const timetable = await Timetable.findById(req.params.id);
+
+    if (!timetable) {
+      return res.status(404).json({ message: "Timetable not found" });
+    }
+
+    // 🔥 IMPORTANT SAFETY DEFAULT
+    if (!timetable.status) {
+      timetable.status = "Active";
+    }
+
+    timetable.status = timetable.status === "Active" ? "Inactive" : "Active";
+
+    await timetable.save();
+    res.json(timetable);
   } catch (err) {
+    console.error("Toggle error:", err);
     res.status(500).json({ error: err.message });
   }
 });

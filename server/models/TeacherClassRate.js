@@ -27,10 +27,6 @@ const TeacherClassRateSchema = new mongoose.Schema(
       enum: ["Active", "Inactive"],
       default: "Active",
     },
-    createdDate: {
-      type: Date,
-      default: Date.now,
-    },
   },
   { timestamps: true }
 );

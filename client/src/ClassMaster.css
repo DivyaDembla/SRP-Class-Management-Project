@@ -200,9 +200,6 @@
   padding: 10px;
 }
 
-
-
-
 /* Sidebar base styles */
 .classmaster-sidebar {
   width: 220px;
@@ -253,4 +250,58 @@
     display: flex;
     justify-content: center;
   }
+}
+
+/* Action buttons container */
+.action-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* Edit button */
+.btn-edit {
+  background: #5ea1f1;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-edit:hover {
+  background: #3b82f6;
+}
+
+/* Activate button (Green) */
+.btn-activate {
+  background: #22c55e; /* green */
+  color: white;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 5px; /* pill shape */
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.btn-activate:hover {
+  background: #16a34a;
+}
+
+/* Deactivate button (Red) */
+.btn-deactivate {
+  background: #ef4444; /* red */
+  color: white;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 5px; /* pill shape */
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.btn-deactivate:hover {
+  background: #dc2626;
 }

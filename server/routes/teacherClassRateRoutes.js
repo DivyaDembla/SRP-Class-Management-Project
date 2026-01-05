@@ -36,4 +36,25 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
+/* ✅ UPDATE RATE (EDIT) */
+router.put("/:id", async (req, res) => {
+  try {
+    const updatedRate = await TeacherClassRate.findByIdAndUpdate(
+      req.params.id,
+      {
+        teacherName: req.body.teacherName,
+        classValue: req.body.classValue,
+        sectionValue: req.body.sectionValue,
+        subject: req.body.subject,
+        rate: req.body.rate,
+      },
+      { new: true }
+    );
+
+    res.json(updatedRate);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;

@@ -81,6 +81,19 @@ hr {
   color: #374151;
 }
 
+.buttons-group {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+/* Optional: keep buttons same height */
+.buttons-group button {
+  min-width: 100px;
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -185,6 +198,36 @@ th {
   .delete-btn {
     width: 100%;
   }
+}
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-edit {
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.action-edit:hover {
+  text-decoration: underline;
+}
+
+.btn-deactivate {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.35rem 0.9rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-deactivate:hover {
+  background: #b91c1c;
 }
 
 /* Phones */

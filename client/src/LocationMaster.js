@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import CollapsibleCard from "./CollapsibleCard";
 import "./LocationMaster.css";
 
 const API = "http://localhost:5000/api/locations";
@@ -11,14 +12,14 @@ const LocationMaster = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [locations, setLocations] = useState([]); // fetched list
+  const [locations, setLocations] = useState([]);
 
-  // Fetch all locations on page load
+  // Fetch locations on load
   useEffect(() => {
     axios.get(API).then((res) => setLocations(res.data));
   }, []);
 
-  // --- LIVE VALIDATION ---
+  /* ---------------- VALIDATION ---------------- */
   const validateField = (name, value) => {
     let message = "";
     const nameRegex = /^[A-Za-z\s]+$/;
@@ -36,7 +37,6 @@ const LocationMaster = () => {
     setErrors((prev) => ({ ...prev, [name]: message }));
   };
 
-  // --- FULL FORM VALIDATION ---
   const validate = () => {
     const { locationName, address } = locationData;
     const nameRegex = /^[A-Za-z\s]+$/;
@@ -53,7 +53,7 @@ const LocationMaster = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Input handler + validate live
+  /* ---------------- HANDLERS ---------------- */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setLocationData((prev) => ({ ...prev, [name]: value }));
@@ -66,18 +66,13 @@ const LocationMaster = () => {
 
     try {
       const res = await axios.post(API, locationData);
-
-      alert("✅ Location created successfully!");
-
-      // Add new location to the list without reload
       setLocations((prev) => [res.data, ...prev]);
-
-      // Reset form
       setLocationData({ locationName: "", address: "" });
       setErrors({});
+      alert("✅ Location created successfully!");
     } catch (err) {
       alert("❌ Error creating location");
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -88,10 +83,8 @@ const LocationMaster = () => {
 
   return (
     <div className="locationmaster-content">
-      <div className="form-card">
-        <h2 className="form-title">Location Master</h2>
-        <div className="line"></div>
-
+      {/* 🔽 FORM CARD (COLLAPSIBLE & DEFAULT CLOSED) */}
+      <CollapsibleCard title="Location Master" defaultOpen={false}>
         <form onSubmit={handleCreate}>
           <div className="form-grid">
             <div>
@@ -102,7 +95,6 @@ const LocationMaster = () => {
                 value={locationData.locationName}
                 onChange={handleInputChange}
                 onBlur={(e) => validateField("locationName", e.target.value)}
-                placeholder="Enter location name"
                 className={`form-input ${
                   errors.locationName ? "input-error" : ""
                 }`}
@@ -119,12 +111,11 @@ const LocationMaster = () => {
                 value={locationData.address}
                 onChange={handleInputChange}
                 onBlur={(e) => validateField("address", e.target.value)}
-                placeholder="Enter the address"
+                rows="3"
                 className={`form-textarea ${
                   errors.address ? "input-error" : ""
                 }`}
-                rows="3"
-              ></textarea>
+              />
               {errors.address && (
                 <span className="error">{errors.address}</span>
               )}
@@ -144,16 +135,39 @@ const LocationMaster = () => {
             </button>
           </div>
         </form>
+      </CollapsibleCard>
 
-        {/* SHOW ALL LOCATIONS */}
+      {/* 📊 TABLE CARD (NORMAL CARD, NOT COLLAPSIBLE) */}
+      <div className="form-card">
         <h3 className="list-title">Saved Locations</h3>
-        <ul className="location-list">
-          {locations.map((loc) => (
-            <li key={loc._id}>
-              <strong>{loc.locationName}</strong> — {loc.address}
-            </li>
-          ))}
-        </ul>
+
+        <div className="table-container">
+          <table className="location-table">
+            <thead>
+              <tr>
+                <th>Location Name</th>
+                <th>Address</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {locations.length === 0 ? (
+                <tr>
+                  <td colSpan="2" className="no-data">
+                    No locations added yet
+                  </td>
+                </tr>
+              ) : (
+                locations.map((loc) => (
+                  <tr key={loc._id}>
+                    <td>{loc.locationName}</td>
+                    <td>{loc.address}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,9 @@ const router = express.Router();
 const multer = require("multer");
 const Student = require("../models/Student");
 
-// -------- MULTER STORAGE --------
+/* ===============================
+   MULTER CONFIG
+================================ */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) =>
@@ -12,17 +14,21 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// -------- GET ALL STUDENTS --------
+/* ===============================
+   GET ALL STUDENTS
+================================ */
 router.get("/", async (req, res) => {
   try {
-    const list = await Student.find().sort({ createdAt: -1 });
-    res.json(list);
+    const students = await Student.find().sort({ createdAt: -1 });
+    res.json(students);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// -------- ADD NEW STUDENT --------
+/* ===============================
+   CREATE STUDENT
+================================ */
 router.post(
   "/",
   upload.fields([
@@ -50,5 +56,82 @@ router.post(
     }
   }
 );
+
+/* ===============================
+   UPDATE STUDENT (EDIT)
+================================ */
+router.put(
+  "/:id",
+  upload.fields([
+    { name: "documentFile", maxCount: 1 },
+    { name: "studentPhoto", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const student = await Student.findById(req.params.id);
+      if (!student) {
+        return res.status(404).json({ error: "Student not found" });
+      }
+
+      Object.assign(student, req.body);
+
+      if (req.files.documentFile) {
+        student.documentFile = req.files.documentFile[0].path;
+      }
+
+      if (req.files.studentPhoto) {
+        student.studentPhoto = req.files.studentPhoto[0].path;
+      }
+
+      const updated = await student.save();
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+/* ===============================
+   ACTIVATE / DEACTIVATE STUDENT
+================================ */
+router.patch("/:id/toggle", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    const newStatus = student.status === "Active" ? "Inactive" : "Active";
+
+    const updatedStudent = await Student.findByIdAndUpdate(
+      req.params.id,
+      { status: newStatus },
+      { new: true }
+    );
+
+    res.json(updatedStudent);
+  } catch (err) {
+    console.error("Toggle error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* ===============================
+   DELETE STUDENT (OPTIONAL)
+================================ */
+router.delete("/:id", async (req, res) => {
+  try {
+    const deleted = await Student.findByIdAndDelete(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    res.json({ message: "Student deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

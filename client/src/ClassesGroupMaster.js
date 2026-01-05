@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import axios from "axios";
+import CollapsibleCard from "./CollapsibleCard"; // ✅ ADD THIS
 import "./ClassesGroupMaster.css";
 
 const API = "http://localhost:5000/api/class-groups";
@@ -66,12 +67,10 @@ const ClassesGroupMaster = () => {
 
   const editing = useMemo(() => editingGroup !== null, [editingGroup]);
 
-  // LOAD ALL GROUPS FROM MONGO
   useEffect(() => {
     axios.get(API).then((res) => setGroups(res.data));
   }, []);
 
-  // Input change + validation
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -116,7 +115,6 @@ const ClassesGroupMaster = () => {
       return;
     }
 
-    // VALIDATION errors
     if (Object.values(errors).some((err) => err)) {
       alert("Fix validation errors.");
       return;
@@ -124,19 +122,14 @@ const ClassesGroupMaster = () => {
 
     try {
       if (editing) {
-        // UPDATE
         const res = await axios.put(`${API}/${editingGroup._id}`, formData);
-
         setGroups((prev) =>
           prev.map((g) => (g._id === editingGroup._id ? res.data : g))
         );
-
         alert("✅ Updated successfully");
       } else {
-        // CREATE
         const res = await axios.post(API, formData);
         setGroups((prev) => [...prev, res.data]);
-
         alert("✅ Saved successfully");
       }
 
@@ -149,12 +142,11 @@ const ClassesGroupMaster = () => {
 
   return (
     <div className="classesgroupmaster-content">
-      <div className="card">
-        <h2 className="card-title">
-          {editing ? "Update Class Group" : "Classes Group Master"}
-        </h2>
-        <hr className="divider" />
-
+      {/* 🔽 FIRST CARD — COLLAPSIBLE */}
+      <CollapsibleCard
+        title={editing ? "Update Class Group" : "Classes Group Master"}
+        defaultOpen={false}
+      >
         <form onSubmit={handleSaveOrUpdate}>
           <div className="form-grid">
             <div>
@@ -164,7 +156,6 @@ const ClassesGroupMaster = () => {
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
-                disabled={editing}
                 className="input"
               />
               {errors.location && <p className="error">{errors.location}</p>}
@@ -177,7 +168,6 @@ const ClassesGroupMaster = () => {
                 name="className"
                 value={formData.className}
                 onChange={handleInputChange}
-                disabled={editing}
                 className="input"
               />
               {errors.className && <p className="error">{errors.className}</p>}
@@ -262,14 +252,12 @@ const ClassesGroupMaster = () => {
           </div>
 
           <div className="button-group">
-            {/* Save button (only when NOT editing) */}
             {!editing && (
               <button type="submit" className="btn-form btn-save-mode">
                 Save
               </button>
             )}
 
-            {/* Update button (only when editing) */}
             {editing && (
               <button
                 type="submit"
@@ -280,7 +268,6 @@ const ClassesGroupMaster = () => {
               </button>
             )}
 
-            {/* Reset button always visible */}
             <button
               type="button"
               onClick={handleReset}
@@ -290,8 +277,9 @@ const ClassesGroupMaster = () => {
             </button>
           </div>
         </form>
-      </div>
+      </CollapsibleCard>
 
+      {/* 📋 SECOND CARD — NORMAL */}
       <ClassesGroupList groups={groups} onEdit={handleEdit} />
     </div>
   );

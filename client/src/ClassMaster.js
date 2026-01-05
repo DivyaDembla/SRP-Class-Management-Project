@@ -150,7 +150,7 @@ export default function ClassMaster() {
 
   return (
     <div className="classmaster-content">
-      <CollapsibleCard title="Add / Edit Class" defaultOpen={true}>
+      <CollapsibleCard title="Add / Edit Class" defaultOpen={false}>
         <div className="form-group">
           <label>Class Name:</label>
           <input
@@ -253,11 +253,29 @@ export default function ClassMaster() {
                   <td>{row.description}</td>
                   <td>{row.financialYear}</td>
                   <td>{row.status}</td>
-                  <td>
-                    <button onClick={() => handleEdit(row)}>Edit</button>
-                    <button onClick={() => handleToggle(row._id)}>
-                      {row.status === "Active" ? "Deactivate" : "Activate"}
+                  <td className="action-cell">
+                    <button
+                      className="btn-edit"
+                      onClick={() => handleEdit(row)}
+                    >
+                      Edit
                     </button>
+
+                    {row.status === "Active" ? (
+                      <button
+                        className="btn-deactivate"
+                        onClick={() => handleToggle(row._id)}
+                      >
+                        Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-activate"
+                        onClick={() => handleToggle(row._id)}
+                      >
+                        Activate
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))

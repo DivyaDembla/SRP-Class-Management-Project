@@ -151,6 +151,17 @@
   font-style: italic;
 }
 
+/* IMPORTANT: inactive rows should NOT block clicks */
+.inactive-row {
+  opacity: 0.65;
+}
+
+/* Ensure buttons stay clickable */
+.inactive-row .btn {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 /* --- Responsive --- */
 @media (max-width: 768px) {
   .student-card {
