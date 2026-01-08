@@ -43,46 +43,40 @@ export default function AttendanceManagement() {
   };
 
   const fetchStudents = async () => {
-  if (!validateFields()) return;
+    if (!validateFields()) return;
 
-  try {
-    const res = await axios.get(API, {
-      params: {
-        date: formData.date,
-        className: formData.className,
-        section: formData.section,
-      },
-    });
+    try {
+      const res = await axios.get(API, {
+        params: {
+          date: formData.date,
+          className: formData.className,
+          section: formData.section,
+        },
+      });
 
-    const fetchedStudents = res.data?.students || [
-      { rollNo: 1, name: "Amit Kumar", attendance: "Present" },
-      { rollNo: 2, name: "Sneha Sharma", attendance: "Present" },
-    ];
+      const fetchedStudents = res.data?.students || [
+        { rollNo: 1, name: "Amit Kumar", attendance: "Present" },
+        { rollNo: 2, name: "Sneha Sharma", attendance: "Present" },
+      ];
 
-    setStudents(fetchedStudents);
-    setHoliday(res.data?.holiday || false);
-
-  } catch (err) {
-    //alert("Failed to fetch attendance");
-    // fallback default list
-    setStudents([
-      { rollNo: 1, name: "Amit Kumar", attendance: "Present" },
-      { rollNo: 2, name: "Sneha Sharma", attendance: "Present" },
-    ]);
-    setHoliday(false);
-  }
-};
-
-
+      setStudents(fetchedStudents);
+      setHoliday(res.data?.holiday || false);
+    } catch (err) {
+      //alert("Failed to fetch attendance");
+      // fallback default list
+      setStudents([
+        { rollNo: 1, name: "Amit Kumar", attendance: "Present" },
+        { rollNo: 2, name: "Sneha Sharma", attendance: "Present" },
+      ]);
+      setHoliday(false);
+    }
+  };
 
   const markAll = (status) => {
-  if (holiday) return;
+    if (holiday) return;
 
-  setStudents((prev) =>
-    prev.map((s) => ({ ...s, attendance: status }))
-  );
-};
-
+    setStudents((prev) => prev.map((s) => ({ ...s, attendance: status })));
+  };
 
   const handleAttendanceChange = (index, value) => {
     const updated = [...students];
@@ -91,25 +85,24 @@ export default function AttendanceManagement() {
   };
 
   const saveAttendance = async () => {
-  if (!validateFields()) return;
+    if (!validateFields()) return;
 
-  try {
-    await axios.post(API, {
-      academicYear: formData.academicYear,
-      month: formData.month,
-      className: formData.className,
-      section: formData.section,
-      date: formData.date,
-      holiday,
-      students,
-    });
+    try {
+      await axios.post(API, {
+        academicYear: formData.academicYear,
+        month: formData.month,
+        className: formData.className,
+        section: formData.section,
+        date: formData.date,
+        holiday,
+        students,
+      });
 
-    //alert("Attendance saved successfully ✅");
-  } catch (err) {
-    //alert("Failed to save attendance ❌");
-  }
-};
-
+      //alert("Attendance saved successfully ✅");
+    } catch (err) {
+      //alert("Failed to save attendance ❌");
+    }
+  };
 
   return (
     <div className="attendance-container">
@@ -201,42 +194,46 @@ export default function AttendanceManagement() {
           <button onClick={() => markAll("Absent")}>Mark all Absent</button>
         </div>
 
-        <table className="attendance-table">
-          <thead>
-            <tr>
-              <th>Roll No.</th>
-              <th>Student Name</th>
-              <th>Attendance</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {students.length === 0 ? (
+        <div className="attendance-table-wrapper">
+          <table className="attendance-table">
+            <thead>
               <tr>
-                <td colSpan="3" className="no-data">
-                  No students found
-                </td>
+                <th>Roll No.</th>
+                <th>Student Name</th>
+                <th>Attendance</th>
               </tr>
-            ) : (
-              students.map((s, i) => (
-                <tr key={i}>
-                  <td>{s.rollNo}</td>
-                  <td>{s.name}</td>
-                  <td>
-                  <select
-                  value={s.attendance}
-                  disabled={holiday}
-                  onChange={(e) => handleAttendanceChange(i, e.target.value)}
-                >
-                  <option value="Present">Present</option>
-                  <option value="Absent">Absent</option>
-                </select>
+            </thead>
+
+            <tbody>
+              {students.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="no-data">
+                    No students found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                students.map((s, i) => (
+                  <tr key={i}>
+                    <td>{s.rollNo}</td>
+                    <td>{s.name}</td>
+                    <td>
+                      <select
+                        value={s.attendance}
+                        disabled={holiday}
+                        onChange={(e) =>
+                          handleAttendanceChange(i, e.target.value)
+                        }
+                      >
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         <div className="footer-actions">
           <button className="save-btn" onClick={saveAttendance}>

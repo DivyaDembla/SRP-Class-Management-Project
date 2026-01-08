@@ -255,51 +255,55 @@ const TeacherClassRate = () => {
       </button>
 
       {/* TABLE (UNCHANGED UI + EDIT BUTTON ADDED) */}
-      <table className="tcr-table">
-        <thead>
-          <tr>
-            <th>Teacher</th>
-            <th>Class</th>
-            <th>Section</th>
-            <th>Subject</th>
-            <th>Rate</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredRates.length ? (
-            filteredRates.map((r) => (
-              <tr key={r._id}>
-                <td>{r.teacherName}</td>
-                <td>{r.classValue}</td>
-                <td>{r.sectionValue}</td>
-                <td>{r.subject}</td>
-                <td>{r.rate}</td>
-                <td>{r.status}</td>
-                <td>
-                  <button className="btn-edit" onClick={() => handleEdit(r)}>
-                    Edit
-                  </button>
-                  <button
-                    className={
-                      r.status === "Active" ? "btn-deactivate" : "btn-activate"
-                    }
-                    onClick={() => handleToggleStatus(r._id, r.status)}
-                  >
-                    {r.status === "Active" ? "Deactivate" : "Activate"}
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
+      <div className="tcr-table-container">
+        <table className="tcr-table">
+          <thead>
             <tr>
-              <td colSpan="7">No data found</td>
+              <th>Teacher</th>
+              <th>Class</th>
+              <th>Section</th>
+              <th>Subject</th>
+              <th>Rate</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {filteredRates.length ? (
+              filteredRates.map((r) => (
+                <tr key={r._id}>
+                  <td>{r.teacherName}</td>
+                  <td>{r.classValue}</td>
+                  <td>{r.sectionValue}</td>
+                  <td>{r.subject}</td>
+                  <td>{r.rate}</td>
+                  <td>{r.status}</td>
+                  <td>
+                    <button className="btn-edit" onClick={() => handleEdit(r)}>
+                      Edit
+                    </button>
+                    <button
+                      className={
+                        r.status === "Active"
+                          ? "btn-deactivate"
+                          : "btn-activate"
+                      }
+                      onClick={() => handleToggleStatus(r._id, r.status)}
+                    >
+                      {r.status === "Active" ? "Deactivate" : "Activate"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7">No data found</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

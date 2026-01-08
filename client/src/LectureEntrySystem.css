@@ -155,6 +155,15 @@ th {
   color: #6b7280;
   padding: 1rem;
 }
+/* ===== TABLE SCROLL FIX ===== */
+.lecture-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Mobile tweaks */
 
 /* ========== RESPONSIVE DESIGN ========== */
 
@@ -163,6 +172,16 @@ th {
   .lecture-form,
   .lecture-table {
     padding: 1.5rem;
+  }
+  .lecture-table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .lecture-table table th,
+  .lecture-table table td {
+    white-space: nowrap;
+    font-size: 0.8rem;
+    padding: 0.6rem;
   }
 }
 

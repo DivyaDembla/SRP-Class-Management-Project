@@ -304,42 +304,44 @@ const ExpenseEntryScreen = () => {
       <div className="expense-card">
         <h2 className="summary-title">Expense Summary</h2>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Paid To</th>
-              <th>Mode</th>
-              <th>Remarks</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {expenses.map((ex) => (
-              <tr key={ex._id}>
-                <td>{ex.date}</td>
-                <td>{ex.expenseType}</td>
-                <td>₹{ex.amount}</td>
-                <td>{ex.paidTo}</td>
-                <td>{ex.paymentMode}</td>
-                <td>{ex.remarks}</td>
-                <td>
-                  <button onClick={() => handleEdit(ex)}>Edit</button>
-                  <button onClick={() => handleDelete(ex._id)}>Delete</button>
-                </td>
-              </tr>
-            ))}
-
-            {expenses.length === 0 && (
+        <div className="table-container">
+          <table>
+            <thead>
               <tr>
-                <td colSpan="7">No expenses recorded.</td>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Paid To</th>
+                <th>Mode</th>
+                <th>Remarks</th>
+                <th>Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {expenses.map((ex) => (
+                <tr key={ex._id}>
+                  <td>{ex.date}</td>
+                  <td>{ex.expenseType}</td>
+                  <td>₹{ex.amount}</td>
+                  <td>{ex.paidTo}</td>
+                  <td>{ex.paymentMode}</td>
+                  <td>{ex.remarks}</td>
+                  <td>
+                    <button onClick={() => handleEdit(ex)}>Edit</button>
+                    <button onClick={() => handleDelete(ex._id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+
+              {expenses.length === 0 && (
+                <tr>
+                  <td colSpan="7">No expenses recorded.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

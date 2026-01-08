@@ -34,10 +34,7 @@ export default function ClassMaster() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setForm((p) => ({ ...p, [name]: value }));
-
-    // Clear error WHILE typing for that field
     setErrors((prev) => ({ ...prev, [name]: "", duplicate: "" }));
   };
 
@@ -55,11 +52,9 @@ export default function ClassMaster() {
   const normalizeKey = (name, section) =>
     `${name}`.trim().toLowerCase() + "|" + `${section}`.trim().toLowerCase();
 
-  // REAL-TIME + FULL VALIDATION
   const validate = (fieldName) => {
     let newErrors = { ...errors };
 
-    // 🟦 Validate Class Name (Required)
     if (!form.name.trim()) {
       if (!fieldName || fieldName === "name") {
         newErrors.name = "Class Name is required";
@@ -68,7 +63,6 @@ export default function ClassMaster() {
       if (fieldName === "name") newErrors.name = "";
     }
 
-    // 🟦 Duplicate Check (if name or section involved)
     const key = normalizeKey(form.name, form.section);
     const duplicate = classes.some(
       (c) =>
@@ -81,24 +75,19 @@ export default function ClassMaster() {
         newErrors.duplicate = "This Class Name + Section already exists";
       }
     } else {
-      if (fieldName === "name" || fieldName === "section") {
-        newErrors.duplicate = "";
-      }
+      newErrors.duplicate = "";
     }
 
     setErrors(newErrors);
 
-    // If validating whole form → return true/false
     if (!fieldName) {
       return Object.values(newErrors).every((v) => v === "");
     }
-
     return true;
   };
 
-  // SAVE
   const handleSave = async () => {
-    if (!validate()) return; // full validation
+    if (!validate()) return;
 
     const payload = {
       name: form.name.trim(),
@@ -109,18 +98,15 @@ export default function ClassMaster() {
     };
 
     const res = await axios.post(API, payload);
-
     setClasses((prev) => [res.data, ...prev]);
     resetForm();
   };
 
-  // EDIT
   const handleEdit = (row) => {
     setForm({ ...row });
     setErrors({});
   };
 
-  // UPDATE
   const handleUpdate = async () => {
     if (!editing || !validate()) return;
 
@@ -132,15 +118,12 @@ export default function ClassMaster() {
     };
 
     const res = await axios.put(`${API}/${form._id}`, payload);
-
     setClasses((prev) =>
       prev.map((c) => (c._id === res.data._id ? res.data : c))
     );
-
     resetForm();
   };
 
-  // TOGGLE ACTIVE/INACTIVE
   const handleToggle = async (id) => {
     const res = await axios.patch(`${API}/${id}/toggle`);
     setClasses((prev) =>
@@ -158,7 +141,7 @@ export default function ClassMaster() {
             name="name"
             value={form.name}
             onChange={handleChange}
-            onBlur={() => validate("name")} // REAL-TIME VALIDATION
+            onBlur={() => validate("name")}
           />
           {errors.name && <p className="error">{errors.name}</p>}
         </div>
@@ -170,7 +153,7 @@ export default function ClassMaster() {
             name="section"
             value={form.section}
             onChange={handleChange}
-            onBlur={() => validate("section")} // REAL-TIME VALIDATION
+            onBlur={() => validate("section")}
           />
         </div>
 
@@ -226,62 +209,65 @@ export default function ClassMaster() {
       <div className="table-card">
         <h2>Class List</h2>
         <hr />
-        <table>
-          <thead>
-            <tr>
-              <th>Class Name</th>
-              <th>Section</th>
-              <th>Description</th>
-              <th>Financial Year</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
 
-          <tbody>
-            {classes.length === 0 ? (
+        <div className="table-wrapper">
+          <table>
+            <thead>
               <tr>
-                <td colSpan={6} className="empty">
-                  No classes added yet
-                </td>
+                <th>Class Name</th>
+                <th>Section</th>
+                <th>Description</th>
+                <th>Financial Year</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            ) : (
-              classes.map((row) => (
-                <tr key={row._id}>
-                  <td>{row.name}</td>
-                  <td>{row.section}</td>
-                  <td>{row.description}</td>
-                  <td>{row.financialYear}</td>
-                  <td>{row.status}</td>
-                  <td className="action-cell">
-                    <button
-                      className="btn-edit"
-                      onClick={() => handleEdit(row)}
-                    >
-                      Edit
-                    </button>
+            </thead>
 
-                    {row.status === "Active" ? (
-                      <button
-                        className="btn-deactivate"
-                        onClick={() => handleToggle(row._id)}
-                      >
-                        Deactivate
-                      </button>
-                    ) : (
-                      <button
-                        className="btn-activate"
-                        onClick={() => handleToggle(row._id)}
-                      >
-                        Activate
-                      </button>
-                    )}
+            <tbody>
+              {classes.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="empty">
+                    No classes added yet
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                classes.map((row) => (
+                  <tr key={row._id}>
+                    <td>{row.name}</td>
+                    <td>{row.section}</td>
+                    <td>{row.description}</td>
+                    <td>{row.financialYear}</td>
+                    <td>{row.status}</td>
+                    <td className="action-cell">
+                      <button
+                        className="btn-edit"
+                        onClick={() => handleEdit(row)}
+                      >
+                        Edit
+                      </button>
+
+                      {row.status === "Active" ? (
+                        <button
+                          className="btn-deactivate"
+                          onClick={() => handleToggle(row._id)}
+                        >
+                          Deactivate
+                        </button>
+                      ) : (
+                        <button
+                          className="btn-activate"
+                          onClick={() => handleToggle(row._id)}
+                        >
+                          Activate
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

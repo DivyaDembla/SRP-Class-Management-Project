@@ -279,3 +279,14 @@ td button:hover {
 .close-btn:hover {
   background: #1e40af;
 }
+@media (max-width: 768px) {
+  .table-container {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table th,
+  table td {
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+}

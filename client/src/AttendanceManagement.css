@@ -23,7 +23,6 @@
   margin-top: 2px;
 }
 
-
 .attendance-card h2 {
   margin-bottom: 10px;
   font-size: 20px;
@@ -118,4 +117,25 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
+}
+/* ===== Attendance Table Scroll Fix ===== */
+.attendance-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .attendance-table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .attendance-table th,
+  .attendance-table td {
+    font-size: 0.8rem;
+    padding: 6px;
+    white-space: nowrap;
+  }
 }

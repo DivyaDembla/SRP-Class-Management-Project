@@ -72,3 +72,41 @@
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
+/* ================= TABLE WRAPPED INSIDE CARD ================= */
+.table-wrapper {
+  max-height: 320px; /* vertical scroll */
+  overflow-y: auto;
+  overflow-x: auto;
+  border-radius: 8px;
+}
+
+/* Prevent table from squeezing */
+.card table {
+  width: 100%;
+  min-width: 700px; /* adjust if needed */
+  border-collapse: collapse;
+}
+
+/* Optional: sticky header */
+.card thead th {
+  position: sticky;
+  top: 0;
+  background: #f7f7f7;
+  z-index: 2;
+}
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+  }
+
+  .table-wrapper {
+    max-height: 240px;
+  }
+
+  .card th,
+  .card td {
+    padding: 8px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+}

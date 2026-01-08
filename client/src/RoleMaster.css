@@ -91,3 +91,23 @@
   margin-top: 2px;
   display: block;
 }
+
+@media (max-width: 768px) {
+  /* Keep buttons inside card padding */
+  .button-group {
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-right: 0.5rem;
+  }
+
+  /* Suppress button size */
+  .btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    min-width: auto;
+    max-width: 100%;
+    border-radius: 0.45rem;
+    line-height: 1.2;
+  }
+}

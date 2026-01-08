@@ -179,7 +179,6 @@
   margin-top: 3px;
 }
 
-
 .income-card {
   background: #ffffff;
   border-radius: 12px;
@@ -187,4 +186,39 @@
   padding: 2rem;
   margin: 1rem 0 2rem 0;
   max-width: 2000px;
+}
+@media (max-width: 768px) {
+  .income-card {
+    padding: 1.2rem; /* still a card */
+  }
+
+  .income-form {
+    grid-template-columns: 1fr; /* form stacks */
+    gap: 1.2rem;
+  }
+
+  .btn-group {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .income-table {
+    min-width: 700px; /* forces scroll INSIDE card */
+  }
+
+  .income-table th,
+  .income-table td {
+    white-space: nowrap;
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
 }

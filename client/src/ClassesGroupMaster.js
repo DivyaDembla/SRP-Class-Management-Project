@@ -1,52 +1,56 @@
 import React, { useState, useMemo, useEffect } from "react";
 import axios from "axios";
-import CollapsibleCard from "./CollapsibleCard"; // ✅ ADD THIS
+import CollapsibleCard from "./CollapsibleCard";
 import "./ClassesGroupMaster.css";
 
 const API = "http://localhost:5000/api/class-groups";
 
-// --- Class Group List Component ---
+/* ================= CLASS GROUP LIST ================= */
 const ClassesGroupList = ({ groups, onEdit }) => (
   <div className="card list-card">
     <h3 className="card-subtitle">Class Groups List ({groups.length})</h3>
     <hr className="divider" />
-    <table>
-      <thead>
-        <tr>
-          <th>Location</th>
-          <th>Class Name</th>
-          <th>City</th>
-          <th>Email ID</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {groups.length === 0 ? (
+
+    <div className="table-wrapper">
+      <table>
+        <thead>
           <tr>
-            <td colSpan="5" className="empty-row">
-              No Class Groups found.
-            </td>
+            <th>Location</th>
+            <th>Class Name</th>
+            <th>City</th>
+            <th>Email ID</th>
+            <th>Action</th>
           </tr>
-        ) : (
-          groups.map((group) => (
-            <tr key={group._id}>
-              <td>{group.location}</td>
-              <td>{group.className}</td>
-              <td>{group.city}</td>
-              <td>{group.emailId}</td>
-              <td>
-                <button onClick={() => onEdit(group)} className="btn-edit">
-                  ✏️ Edit
-                </button>
+        </thead>
+        <tbody>
+          {groups.length === 0 ? (
+            <tr>
+              <td colSpan="5" className="empty-row">
+                No Class Groups found.
               </td>
             </tr>
-          ))
-        )}
-      </tbody>
-    </table>
+          ) : (
+            groups.map((group) => (
+              <tr key={group._id}>
+                <td>{group.location}</td>
+                <td>{group.className}</td>
+                <td>{group.city}</td>
+                <td>{group.emailId}</td>
+                <td>
+                  <button onClick={() => onEdit(group)} className="btn-edit">
+                    ✏️ Edit
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
   </div>
 );
 
+/* ================= INITIAL FORM DATA ================= */
 const initialFormData = {
   location: "",
   className: "",
@@ -136,13 +140,13 @@ const ClassesGroupMaster = () => {
       handleReset();
     } catch (err) {
       alert("❌ Error saving data");
-      console.log(err);
+      console.error(err);
     }
   };
 
   return (
     <div className="classesgroupmaster-content">
-      {/* 🔽 FIRST CARD — COLLAPSIBLE */}
+      {/* ========= FORM CARD ========= */}
       <CollapsibleCard
         title={editing ? "Update Class Group" : "Classes Group Master"}
         defaultOpen={false}
@@ -259,11 +263,7 @@ const ClassesGroupMaster = () => {
             )}
 
             {editing && (
-              <button
-                type="submit"
-                className="btn-form btn-update-mode"
-                style={{ backgroundColor: "green", color: "white" }}
-              >
+              <button type="submit" className="btn-form btn-update-mode">
                 Update
               </button>
             )}
@@ -279,7 +279,7 @@ const ClassesGroupMaster = () => {
         </form>
       </CollapsibleCard>
 
-      {/* 📋 SECOND CARD — NORMAL */}
+      {/* ========= LIST CARD ========= */}
       <ClassesGroupList groups={groups} onEdit={handleEdit} />
     </div>
   );

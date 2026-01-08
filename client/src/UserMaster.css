@@ -1,227 +1,227 @@
 /* Page Wrapper */
 .usermaster-content {
-    padding: 20px;
-    background-color: #f4f7f6;
-    min-height: 100vh;
+  padding: 5px;
 }
 
 /* Card Styles */
-.form-card, .list-card {
-    background: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+.form-card,
+.list-card {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
 }
 
-.form-card h2, .list-card h3 {
-    margin-top: 0;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
+.form-card h2,
+.list-card h3 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
 }
 
 hr {
-    border: none;
-    border-top: 1px solid #ddd;
-    margin: 15px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 15px 0;
 }
 
 /* Form Grid */
 .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
 .form-grid > div {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 label {
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: #555;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #555;
 }
 
-input[type="text"], 
-input[type="tel"], 
+input[type="text"],
+input[type="tel"],
 select {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    width: 100%;
-    box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Gender Options */
 .gender-options {
-    display: flex;
-    gap: 20px;
-    padding-top: 5px;
+  display: flex;
+  gap: 20px;
+  padding-top: 5px;
 }
 
 .gender-options label {
-    font-weight: normal;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* Location Tag Management */
 .location-control {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .location-select-add {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .location-select-add select {
-    flex-grow: 1;
+  flex-grow: 1;
 }
 
 .btn-add-loc {
-    padding: 8px 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.2s;
+  padding: 8px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 .btn-add-loc:hover:not(:disabled) {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 .btn-add-loc:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .location-tags {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .location-tag {
-    background-color: #e0f7fa;
-    color: #007bff;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  background-color: #e0f7fa;
+  color: #007bff;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .location-tag button {
-    background: none;
-    border: none;
-    color: #007bff;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 0;
-    margin-left: 5px;
-    line-height: 1;
+  background: none;
+  border: none;
+  color: #007bff;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 5px;
+  line-height: 1;
 }
 
 /* --- Button Group (Form Actions) --- */
 .button-group {
-    grid-column: 1 / -1; 
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-    margin-top: 10px;
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  margin-top: 10px;
 }
 
 /* Base style for Save/Update/Reset buttons */
 .btn-form {
-    padding: 10px 25px;
-    border: none;
-    border-radius: 6px; 
-    cursor: pointer;
-    font-size: 16px; 
-    font-weight: 500;
-    transition: background-color 0.2s, opacity 0.2s;
-    min-width: 120px;
-    color: white; /* Default text color for primary actions */
+  padding: 10px 25px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s, opacity 0.2s;
+  min-width: 120px;
+  color: white; /* Default text color for primary actions */
 }
 
 .btn-form:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* 1. Save Button (Blue) */
 .btn-save-mode {
-    background-color: #5b9bd5; /* Standard Blue */
+  background-color: #5b9bd5; /* Standard Blue */
 }
 .btn-save-mode:hover:not(:disabled) {
-    background-color: #4a8ac2;
+  background-color: #4a8ac2;
 }
 
 /* 2. Update Button (Teal/Dark Green) */
 .btn-update-mode {
-    background-color: #639294; /* Teal/Muted Green */
+  background-color: #639294; /* Teal/Muted Green */
 }
 .btn-update-mode:hover:not(:disabled) {
-    background-color: #558082;
+  background-color: #558082;
 }
 
 /* 3. Reset Button (Light Gray) */
 .btn-reset-mode {
-    background-color: #e0e0e0;
-    color: #4a4a4a; /* Dark text for reset */
+  background-color: #e0e0e0;
+  color: #4a4a4a; /* Dark text for reset */
 }
 .btn-reset-mode:hover:not(:disabled) {
-    background-color: #ccc;
+  background-color: #ccc;
 }
-
 
 /* --- User List Table Styles --- */
 .list-card table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.list-card th, .list-card td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
+.list-card th,
+.list-card td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
 }
 
 .list-card th {
-    background-color: #f8f8f8;
-    color: #333;
+  background-color: #f8f8f8;
+  color: #333;
 }
 
 .list-card tr:hover {
-    background-color: #f9f9f9;
+  background-color: #f9f9f9;
 }
 
 .no-data {
-    text-align: center;
-    padding: 20px;
-    color: #888;
+  text-align: center;
+  padding: 20px;
+  color: #888;
 }
 
 .btn-edit {
-    padding: 5px 10px;
-    background-color: #ffc107;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    color: #333;
+  padding: 5px 10px;
+  background-color: #ffc107;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #333;
 }
 
 .input-error {
@@ -233,4 +233,74 @@ select {
   font-size: 0.85rem;
   margin-top: 2px;
   display: block;
+}
+/* ================= SIMPLE MOBILE FIX (LIKE OTHER PAGES) ================= */
+@media (max-width: 768px) {
+  /* Card padding smaller on mobile */
+  .form-card,
+  .list-card {
+    padding: 16px;
+  }
+
+  /* Stack form fields */
+  .form-grid {
+    grid-template-columns: 1fr; /* 👈 key line */
+    gap: 14px;
+  }
+
+  /* Gender in single horizontal row */
+  .gender-options {
+    gap: 14px;
+    flex-wrap: nowrap;
+  }
+
+  .gender-options label {
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  /* Location select + add stays inside card */
+  .location-select-add {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .location-select-add select {
+    flex: 1;
+  }
+
+  .btn-add-loc {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  /* Form buttons stay inside card */
+  .button-group {
+    justify-content: flex-start;
+    gap: 8px;
+    padding-top: 12px;
+    margin-top: 12px;
+  }
+
+  .btn-form {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+    min-width: auto;
+    line-height: 1;
+  }
+
+  /* Registered users heading smaller */
+  .list-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  /* Table text compact */
+  .list-card th,
+  .list-card td {
+    padding: 8px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
 }

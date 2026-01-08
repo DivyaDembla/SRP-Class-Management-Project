@@ -260,64 +260,66 @@ export default function TimetableManagement() {
       <div className="timeTable-list">
         <h3>Timetable List</h3>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Class</th>
-              <th>Day</th>
-              <th>Time From</th>
-              <th>Time To</th>
-              <th>Subject</th>
-              <th>Teacher</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {timetables.length === 0 ? (
+        <div className="timeTable-table-wrapper">
+          <table>
+            <thead>
               <tr>
-                <td colSpan="7" className="timeTable-no-data">
-                  No records found
-                </td>
+                <th>Class</th>
+                <th>Day</th>
+                <th>Time From</th>
+                <th>Time To</th>
+                <th>Subject</th>
+                <th>Teacher</th>
+                <th>Actions</th>
               </tr>
-            ) : (
-              timetables.map((row) => (
-                <tr key={row._id}>
-                  <td>{row.className}</td>
-                  <td>{row.day}</td>
-                  <td>{row.timeFrom}</td>
-                  <td>{row.timeTo}</td>
-                  <td>{row.subject}</td>
-                  <td>{row.teacher}</td>
-                  <td className="action-cell">
-                    <span
-                      className="action-edit"
-                      onClick={() => handleEdit(row)}
-                    >
-                      Edit
-                    </span>
+            </thead>
 
-                    {row.status === "Active" ? (
-                      <button
-                        className="btn-deactivate"
-                        onClick={() => handleToggle(row._id)}
-                      >
-                        Deactivate
-                      </button>
-                    ) : (
-                      <button
-                        className="btn-activate"
-                        onClick={() => handleToggle(row._id)}
-                      >
-                        Activate
-                      </button>
-                    )}
+            <tbody>
+              {timetables.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="timeTable-no-data">
+                    No records found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                timetables.map((row) => (
+                  <tr key={row._id}>
+                    <td>{row.className}</td>
+                    <td>{row.day}</td>
+                    <td>{row.timeFrom}</td>
+                    <td>{row.timeTo}</td>
+                    <td>{row.subject}</td>
+                    <td>{row.teacher}</td>
+                    <td className="action-cell">
+                      <span
+                        className="action-edit"
+                        onClick={() => handleEdit(row)}
+                      >
+                        Edit
+                      </span>
+
+                      {row.status === "Active" ? (
+                        <button
+                          className="btn-deactivate"
+                          onClick={() => handleToggle(row._id)}
+                        >
+                          Deactivate
+                        </button>
+                      ) : (
+                        <button
+                          className="btn-activate"
+                          onClick={() => handleToggle(row._id)}
+                        >
+                          Activate
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

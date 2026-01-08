@@ -57,3 +57,21 @@
   font-size: 12px;
   margin-top: 2px;
 }
+@media (max-width: 768px) {
+  .button-group {
+    flex-direction: row;
+    align-items: center; /* keep side by side */
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+
+  .btn-save,
+  .btn-reset {
+    width: auto !important; /* 🔥 KEY FIX */
+    height: 32px;
+
+    padding: 0 0.8rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+}

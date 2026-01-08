@@ -5,7 +5,6 @@ import axios from "axios";
 
 const API = "http://localhost:5000/api/lecture-entry";
 
-
 const LectureEntrySystem = () => {
   const [teacher] = useState("Auto generated");
   const [date, setDate] = useState("");
@@ -20,13 +19,13 @@ const LectureEntrySystem = () => {
   const [timetable, setTimetable] = useState([]);
 
   React.useEffect(() => {
-  fetchLectures();
-}, []);
+    fetchLectures();
+  }, []);
 
-const fetchLectures = async () => {
-  const res = await axios.get(API);
-  setTimetable(res.data);
-};
+  const fetchLectures = async () => {
+    const res = await axios.get(API);
+    setTimetable(res.data);
+  };
 
   // ERROR STATE
   const [errors, setErrors] = useState({});
@@ -84,64 +83,61 @@ const fetchLectures = async () => {
 
   // VALIDATE ENTIRE FORM
   const validateForm = () => {
-  const values = {
-    date,
-    className,
-    section,
-    subject,
-    chapterName,
-    timeFrom,
-    timeTo,
+    const values = {
+      date,
+      className,
+      section,
+      subject,
+      chapterName,
+      timeFrom,
+      timeTo,
+    };
+
+    return Object.keys(values).every((field) =>
+      validateField(field, values[field])
+    );
   };
-
-  return Object.keys(values).every((field) =>
-    validateField(field, values[field])
-  );
-};
-
 
   const handleSave = async () => {
-  if (!validateForm()) return;
+    if (!validateForm()) return;
 
-  const payload = {
-    teacher,
-    date,
-    className,
-    section,
-    subject,
-    chapterName,
-    topicDescription,
-    timeFrom,
-    timeTo,
-    remarks,
+    const payload = {
+      teacher,
+      date,
+      className,
+      section,
+      subject,
+      chapterName,
+      topicDescription,
+      timeFrom,
+      timeTo,
+      remarks,
+    };
+
+    try {
+      const res = await axios.post(API, payload);
+      setTimetable((prev) => [res.data, ...prev]);
+
+      // reset
+      setDate("");
+      setClassName("");
+      setSection("");
+      setSubject("");
+      setChapterName("");
+      setTopicDescription("");
+      setTimeFrom("");
+      setTimeTo("");
+      setRemarks("");
+      setErrors({});
+    } catch (err) {
+      alert("Failed to save lecture");
+    }
   };
 
-  try {
-    const res = await axios.post(API, payload);
-    setTimetable((prev) => [res.data, ...prev]);
-
-    // reset
-    setDate("");
-    setClassName("");
-    setSection("");
-    setSubject("");
-    setChapterName("");
-    setTopicDescription("");
-    setTimeFrom("");
-    setTimeTo("");
-    setRemarks("");
-    setErrors({});
-  } catch (err) {
-    alert("Failed to save lecture");
-  }
-};
-
-
   const handleDelete = async (id) => {
-  await axios.delete(`${API}/${id}`);
-  fetchLectures();
-};
-
+    await axios.delete(`${API}/${id}`);
+    fetchLectures();
+  };
 
   return (
     <div className="lecture-content">
@@ -311,49 +307,55 @@ const fetchLectures = async () => {
       {/* TABLE */}
       <div className="lecture-table">
         <h3>Timetable List</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Class</th>
-              <th>Section</th>
-              <th>Date</th>
-              <th>Time From</th>
-              <th>Time To</th>
-              <th>Subject</th>
-              <th>Chapter</th>
-              <th>Teacher</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {timetable.length === 0 ? (
+
+        <div className="lecture-table-wrapper">
+          <table>
+            <thead>
               <tr>
-                <td colSpan="9">No records found</td>
+                <th>Class</th>
+                <th>Section</th>
+                <th>Date</th>
+                <th>Time From</th>
+                <th>Time To</th>
+                <th>Subject</th>
+                <th>Chapter</th>
+                <th>Teacher</th>
+                <th>Actions</th>
               </tr>
-            ) : (
-              timetable.map((entry, index) => (
-                <tr key={index}>
-                  <td>{entry.className}</td>
-                  <td>{entry.section}</td>
-                  <td>{entry.date}</td>
-                  <td>{entry.timeFrom}</td>
-                  <td>{entry.timeTo}</td>
-                  <td>{entry.subject}</td>
-                  <td>{entry.chapterName}</td>
-                  <td>{entry.teacher}</td>
-                  <td>
-                    <button
-                    onClick={() => handleDelete(entry._id)}
-                      className="delete-btn"
-                    >
-                      Delete
-                    </button>
+            </thead>
+
+            <tbody>
+              {timetable.length === 0 ? (
+                <tr>
+                  <td colSpan="9" className="lecture-no-data">
+                    No records found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                timetable.map((entry, index) => (
+                  <tr key={index}>
+                    <td>{entry.className}</td>
+                    <td>{entry.section}</td>
+                    <td>{entry.date}</td>
+                    <td>{entry.timeFrom}</td>
+                    <td>{entry.timeTo}</td>
+                    <td>{entry.subject}</td>
+                    <td>{entry.chapterName}</td>
+                    <td>{entry.teacher}</td>
+                    <td>
+                      <button
+                        onClick={() => handleDelete(entry._id)}
+                        className="delete-btn"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
