@@ -5,12 +5,12 @@ import axios from "axios";
 const API = "http://localhost:5000/api/roles";
 
 const RoleMaster = () => {
-  const [roles, setRoles] = useState([]); // ⬅ NEW (needed)
+  const [roles, setRoles] = useState([]);
 
-  const [roleName, setRoleName] = useState("");
+  const [roleType, setRoleType] = useState("");
+  const [customRole, setCustomRole] = useState("");
   const [roleDescription, setRoleDescription] = useState("");
 
-  // Validation errors
   const [errors, setErrors] = useState({
     roleName: "",
     roleDescription: "",
@@ -18,46 +18,44 @@ const RoleMaster = () => {
 
   const nameRegex = /^[A-Za-z\s]+$/;
 
-  // ------------------------
-  // FETCH ROLES FROM DB
-  // ------------------------
+  /* ================= FETCH ================= */
   useEffect(() => {
     axios.get(API).then((res) => setRoles(res.data));
   }, []);
 
-  // ------------------------
-  // LIVE VALIDATION
-  // ------------------------
-  const validateField = (field, value) => {
-    let message = "";
-
-    if (field === "roleName") {
-      if (!value.trim()) message = "Role Name is required";
-      else if (!nameRegex.test(value.trim()))
-        message = "Only letters and spaces allowed";
-    }
-
-    if (field === "roleDescription") {
-      if (!value.trim()) message = "Role Description is required";
-    }
-
-    setErrors((prev) => ({ ...prev, [field]: message }));
+  /* ================= VALIDATION ================= */
+  const validateRoleName = (value) => {
+    if (!value || !value.trim()) return "Please select at least one role";
+    if (!nameRegex.test(value.trim())) return "Only letters and spaces allowed";
+    return "";
   };
 
-  const handleCreate = async () => {
-    validateField("roleName", roleName);
-    validateField("roleDescription", roleDescription);
+  const validateDescription = (value) => {
+    if (!value.trim()) return "Role Description is required";
+    return "";
+  };
 
-    if (!roleName.trim() || !roleDescription.trim()) return;
+  /* ================= CREATE ================= */
+  const handleCreate = async () => {
+    const finalRoleName = roleType === "Custom" ? customRole.trim() : roleType;
+
+    const roleNameError = validateRoleName(finalRoleName);
+    const descError = validateDescription(roleDescription);
+
+    setErrors({
+      roleName: roleNameError,
+      roleDescription: descError,
+    });
+
+    if (roleNameError || descError) return;
 
     try {
       const res = await axios.post(API, {
-        roleName: roleName.trim(),
+        roleName: finalRoleName,
         roleDescription: roleDescription.trim(),
       });
 
       setRoles((prev) => [res.data, ...prev]);
-
       alert("✅ Role created successfully!");
       handleCancel();
     } catch (error) {
@@ -66,8 +64,10 @@ const RoleMaster = () => {
     }
   };
 
+  /* ================= RESET ================= */
   const handleCancel = () => {
-    setRoleName("");
+    setRoleType("");
+    setCustomRole("");
     setRoleDescription("");
     setErrors({
       roleName: "",
@@ -80,21 +80,63 @@ const RoleMaster = () => {
       <div className="card">
         <h2 className="title">Role Master</h2>
         <hr className="divider" />
+
         <form>
-          {/* ROLE NAME */}
+          {/* ROLE NAME DROPDOWN */}
           <div className="form-group">
             <label className="label">Role Name *</label>
-            <input
-              type="text"
-              value={roleName}
+
+            <select
+              value={roleType}
               onChange={(e) => {
-                setRoleName(e.target.value);
-                validateField("roleName", e.target.value);
+                setRoleType(e.target.value);
+                setCustomRole("");
+                setErrors((p) => ({ ...p, roleName: "" }));
               }}
-              onBlur={() => validateField("roleName", roleName)}
-              placeholder="Enter Role name"
+              onBlur={() => {
+                if (!roleType)
+                  setErrors((p) => ({
+                    ...p,
+                    roleName: "Please select at least one role",
+                  }));
+              }}
               className={`input ${errors.roleName ? "input-error" : ""}`}
-            />
+            >
+              {/* PLACEHOLDER (NOT SELECTABLE) */}
+              <option value="" disabled hidden>
+                Select Role
+              </option>
+
+              <option value="Admin">Admin</option>
+              <option value="Teacher">Teacher</option>
+              <option value="Accountant">Accountant</option>
+              <option value="Custom">Custom</option>
+            </select>
+
+            {/* CUSTOM ROLE INPUT */}
+            {roleType === "Custom" && (
+              <input
+                type="text"
+                value={customRole}
+                onChange={(e) => {
+                  setCustomRole(e.target.value);
+                  setErrors((p) => ({
+                    ...p,
+                    roleName: validateRoleName(e.target.value),
+                  }));
+                }}
+                onBlur={() =>
+                  setErrors((p) => ({
+                    ...p,
+                    roleName: validateRoleName(customRole),
+                  }))
+                }
+                placeholder="Enter custom role name"
+                className={`input ${errors.roleName ? "input-error" : ""}`}
+                style={{ marginTop: "10px" }}
+              />
+            )}
+
             {errors.roleName && (
               <span className="error">{errors.roleName}</span>
             )}
@@ -107,9 +149,17 @@ const RoleMaster = () => {
               value={roleDescription}
               onChange={(e) => {
                 setRoleDescription(e.target.value);
-                validateField("roleDescription", e.target.value);
+                setErrors((p) => ({
+                  ...p,
+                  roleDescription: validateDescription(e.target.value),
+                }));
               }}
-              onBlur={() => validateField("roleDescription", roleDescription)}
+              onBlur={() =>
+                setErrors((p) => ({
+                  ...p,
+                  roleDescription: validateDescription(roleDescription),
+                }))
+              }
               placeholder="What is the role about"
               className={`textarea ${
                 errors.roleDescription ? "input-error" : ""

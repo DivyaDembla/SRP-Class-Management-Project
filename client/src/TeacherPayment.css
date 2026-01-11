@@ -12,6 +12,16 @@ body {
   color: #1f2937;
 }
 
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-y: auto;
+}
+
 /* --- Main Container --- */
 .main-container {
   display: flex;

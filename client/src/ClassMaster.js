@@ -57,7 +57,7 @@ export default function ClassMaster() {
 
     if (!form.name.trim()) {
       if (!fieldName || fieldName === "name") {
-        newErrors.name = "Class Name is required";
+        newErrors.name = "Standard is required";
       }
     } else {
       if (fieldName === "name") newErrors.name = "";
@@ -72,7 +72,7 @@ export default function ClassMaster() {
 
     if (duplicate) {
       if (!fieldName || fieldName === "name" || fieldName === "section") {
-        newErrors.duplicate = "This Class Name + Section already exists";
+        newErrors.duplicate = "Standard + Section already exists";
       }
     } else {
       newErrors.duplicate = "";
@@ -135,7 +135,7 @@ export default function ClassMaster() {
     <div className="classmaster-content">
       <CollapsibleCard title="Add / Edit Class" defaultOpen={false}>
         <div className="form-group">
-          <label>Class Name:</label>
+          <label>Standard:</label>
           <input
             type="text"
             name="name"

@@ -19,7 +19,7 @@ const UserListTable = ({ users, onEdit }) => {
           <table>
             <thead>
               <tr>
-                <th>Code</th>
+                <th>Username</th>
                 <th>Name</th>
                 <th>Role</th>
                 <th>Gender</th>
@@ -87,7 +87,7 @@ const UserMaster = () => {
     }
 
     if (field === "userCode") {
-      if (!value.trim()) msg = "User Code is required";
+      if (!value.trim()) msg = "User name is required";
       else if (!editing && users.some((u) => u.userCode === value.trim()))
         msg = "User Code already exists";
     }
@@ -179,7 +179,7 @@ const UserMaster = () => {
             </div>
 
             <div>
-              <label>User Code *</label>
+              <label>Username *</label>
               <input
                 type="text"
                 name="userCode"

@@ -2,20 +2,35 @@ const mongoose = require("mongoose");
 
 const TeacherPaymentSchema = new mongoose.Schema(
   {
+    teacherId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Teacher",
+      required: true,
+    },
+
     teacherName: {
       type: String,
       required: true,
       trim: true,
     },
 
-    month: {
-      type: String, // format: YYYY-MM (from <input type="month" />)
+    standard: {
+      type: String,
       required: true,
     },
 
-    paymentType: {
+    section: {
       type: String,
-      enum: ["Single Teacher Payment", "Bulk Payment"],
+      required: true,
+    },
+
+    subject: {
+      type: String,
+      required: true,
+    },
+
+    month: {
+      type: String, // YYYY-MM
       required: true,
     },
 
@@ -40,7 +55,7 @@ const TeacherPaymentSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["Pending", "Paid"],
-      default: "Pending",
+      default: "Paid",
     },
   },
   { timestamps: true }

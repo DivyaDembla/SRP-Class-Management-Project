@@ -1,459 +1,319 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./TeacherPayment.css";
 import axios from "axios";
 
-const API = "http://localhost:5000/api/teacher-payments";
-
-
-// --- Inline SVG Icons ---
-const DownloadIcon = (props) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-    <polyline points="7 10 12 15 17 10"></polyline>
-    <line x1="12" y1="15" x2="12" y2="3"></line>
-  </svg>
-);
-const SearchIcon = (props) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8"></circle>
-    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-  </svg>
-);
-const CheckSquareIcon = (props) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 11 12 14 22 4"></polyline>
-    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-  </svg>
-);
-
-// --- Mock Data ---
-const MOCK_TEACHER_RATE = 500;
-const MOCK_LECTURE_DATA = {
-  "Jane Smith": 15,
-  "John Doe": 12,
-  "Emily Chen": 18,
-};
-const MOCK_TEACHER_PAYMENTS = [
-  {
-    name: "Jane Smith",
-    totalLectures: 15,
-    totalAmount: 7500,
-    status: "Pending",
-    reportDate: "2025-05",
-  },
-  {
-    name: "John Doe",
-    totalLectures: 12,
-    totalAmount: 6000,
-    status: "Paid",
-    reportDate: "2025-04",
-  },
-  {
-    name: "Emily Chen",
-    totalLectures: 18,
-    totalAmount: 9000,
-    status: "Pending",
-    reportDate: "2025-06",
-  },
-];
+const TEACHER_API = "http://localhost:5000/api/teachers";
+const PAYMENT_API = "http://localhost:5000/api/teacher-payments";
+const CLASS_API = "http://localhost:5000/api/classes";
+const LECTURE_COUNT_API = "http://localhost:5000/api/lecture-counts";
 
 const TeacherPayment = () => {
+  /* ===== MASTER DATA ===== */
+  const [teachers, setTeachers] = useState([]);
+  const [classList, setClassList] = useState([]);
+
+  /* ===== FORM ===== */
   const [selectedMonth, setSelectedMonth] = useState("");
-  const [paymentType, setPaymentType] = useState("Single Teacher Payment");
+  const [selectedTeacherId, setSelectedTeacherId] = useState("");
+  const [selectedStandard, setSelectedStandard] = useState("");
+  const [section, setSection] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [ratePerLecture, setRatePerLecture] = useState("");
 
+  /* ===== VALIDATION ===== */
+  const [touched, setTouched] = useState({});
+
+  const markTouched = (field) =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+  const hasError = (field, value) => touched[field] && (!value || value === "");
+
+  /* ===== LECTURES ===== */
   const [fetchedLectures, setFetchedLectures] = useState(null);
-  const [ratePerLecture] = useState(MOCK_TEACHER_RATE);
+  const [loadingLectures, setLoadingLectures] = useState(false);
 
+  /* ===== TABLE DATA ===== */
   const [paymentSummary, setPaymentSummary] = useState([]);
-  const [paymentReport, setPaymentReport] = useState(MOCK_TEACHER_PAYMENTS);
+  const [paymentReport, setPaymentReport] = useState([]);
 
-  const [loading, setLoading] = useState(false);
-  const [modalContent, setModalContent] = useState(null);
+  /* ===== LOAD MASTER DATA ===== */
+  useEffect(() => {
+    axios.get(TEACHER_API).then((res) => setTeachers(res.data));
+    axios
+      .get(CLASS_API)
+      .then((res) =>
+        setClassList(res.data.filter((c) => c.status === "Active"))
+      );
+  }, []);
 
-  // -------------------- VALIDATION STATE --------------------
-  const [errors, setErrors] = useState({
-    selectedMonth: "",
-    paymentType: "",
-  });
+  useEffect(() => {
+    axios.get(PAYMENT_API).then((res) => {
+      setPaymentReport(res.data);
 
-  // -------------------- VALIDATION LOGIC --------------------
-  const validateField = (name, value) => {
-    let msg = "";
-
-    if (name === "selectedMonth" && value.trim() === "") {
-      msg = "Please select a month.";
-    }
-
-    if (name === "paymentType" && value.trim() === "") {
-      msg = "Please select payment type.";
-    }
-
-    setErrors((prev) => ({ ...prev, [name]: msg }));
-    return msg === "";
-  };
-
-  const isFormValid = () => {
-    const monthValid = validateField("selectedMonth", selectedMonth);
-    const typeValid = validateField("paymentType", paymentType);
-    return monthValid && typeValid;
-  };
-
-  const totalPayableAmount = useMemo(() => {
-    if (
-      paymentType === "Single Teacher Payment" &&
-      typeof fetchedLectures === "number"
-    ) {
-      return fetchedLectures * ratePerLecture;
-    }
-    if (paymentType === "Bulk Payment" && paymentSummary.length > 0) {
-      return paymentSummary.reduce((sum, item) => sum + item.totalAmount, 0);
-    }
-    return null;
-  }, [fetchedLectures, ratePerLecture, paymentType, paymentSummary]);
-
-  const payableAmountText =
-    totalPayableAmount !== null
-      ? `₹${totalPayableAmount.toFixed(2)}`
-      : "-- Total lectures x Rate --";
-
-  const openModal = (title, message) => setModalContent({ title, message });
-  const closeModal = () => setModalContent(null);
-
-  const handleFetch = () => {
-    if (!isFormValid()) return;
-
-    setLoading(true);
-    setTimeout(() => {
-      if (paymentType === "Single Teacher Payment") {
-        const teacherName = "Jane Smith";
-        const lectures = MOCK_LECTURE_DATA[teacherName] || 0;
-        setFetchedLectures(lectures);
+      // ✅ Show latest payment in summary after refresh
+      if (res.data.length > 0) {
+        const latest = res.data[0]; // assuming latest is first
         setPaymentSummary([
           {
-            name: teacherName,
-            totalLectures: lectures,
-            totalAmount: lectures * MOCK_TEACHER_RATE,
-            status: "Pending",
+            teacherName: latest.teacherName,
+            subject: latest.subject,
+            totalLectures: latest.totalLectures,
+            ratePerLecture: latest.ratePerLecture,
+            totalAmount: latest.totalAmount,
+            status: latest.status,
           },
         ]);
-      } else {
-        const summary = Object.entries(MOCK_LECTURE_DATA).map(
-          ([name, lectures]) => ({
-            name,
-            totalLectures: lectures,
-            totalAmount: lectures * MOCK_TEACHER_RATE,
-            status: "Pending",
-          })
-        );
-        setFetchedLectures(summary.length);
-        setPaymentSummary(summary);
       }
-      setLoading(false);
-    }, 1000);
-  };
+    });
+  }, []);
 
-  const handleSavePayment = async () => {
-  if (paymentSummary.length === 0) {
-    openModal("Data Missing", "Please fetch payment details first.");
-    return;
-  }
+  const selectedTeacher = useMemo(
+    () => teachers.find((t) => t._id === selectedTeacherId),
+    [teachers, selectedTeacherId]
+  );
 
-  const isSingle = paymentType === "Single Teacher Payment";
+  /* ===== FETCH LECTURES ===== */
+  useEffect(() => {
+    if (!selectedTeacher || !selectedSubject || !selectedMonth) {
+      setFetchedLectures(0);
+      return;
+    }
 
-  const payload = {
-    teacherName: isSingle
-      ? paymentSummary[0].name
-      : `Bulk Payment (${selectedMonth})`,
-    month: selectedMonth,
-    paymentType,
-    totalLectures: isSingle
-      ? paymentSummary[0].totalLectures
-      : paymentSummary.reduce((s, i) => s + i.totalLectures, 0),
-    ratePerLecture: ratePerLecture,
-    totalAmount: totalPayableAmount,
-  };
+    const fetchLectures = async () => {
+      try {
+        setLoadingLectures(true);
+        const res = await axios.get(LECTURE_COUNT_API, {
+          params: {
+            teacher: selectedTeacher.fullName,
+            subject: selectedSubject,
+            month: selectedMonth,
+          },
+        });
+        setFetchedLectures(Number(res.data?.totalLectures || 0));
+      } catch {
+        setFetchedLectures(0);
+      } finally {
+        setLoadingLectures(false);
+      }
+    };
 
-  try {
-    const res = await axios.post(API, payload);
+    fetchLectures();
+  }, [selectedTeacher, selectedSubject, selectedMonth]);
+
+  /* ===== SAVE ===== */
+  const handleSave = async () => {
+    setTouched({
+      selectedMonth: true,
+      selectedTeacherId: true,
+      selectedStandard: true,
+      selectedSubject: true,
+      ratePerLecture: true,
+    });
+
+    if (
+      !selectedMonth ||
+      !selectedTeacher ||
+      !selectedStandard ||
+      !section ||
+      !selectedSubject ||
+      !ratePerLecture
+    ) {
+      return;
+    }
+
+    const rate = parseInt(ratePerLecture, 10);
+    const lectures = parseInt(fetchedLectures, 10);
+    const totalAmount = rate * lectures;
+
+    const payload = {
+      teacherId: selectedTeacher._id,
+      teacherName: selectedTeacher.fullName,
+      standard: selectedStandard,
+      section,
+      subject: selectedSubject,
+      month: selectedMonth,
+      totalLectures: lectures,
+      ratePerLecture: rate,
+      totalAmount,
+      status: "Paid",
+    };
+
+    const res = await axios.post(PAYMENT_API, payload);
+
+    setPaymentSummary([
+      {
+        teacherName: selectedTeacher.fullName,
+        subject: selectedSubject,
+        totalLectures: lectures,
+        ratePerLecture: rate,
+        totalAmount,
+        status: "Paid",
+      },
+    ]);
 
     setPaymentReport((prev) => [res.data, ...prev]);
-
-    openModal("Payment Saved", "Payment saved successfully!");
-
-    setPaymentSummary([]);
-    setFetchedLectures(null);
-    setSelectedMonth("");
-    setPaymentType("Single Teacher Payment");
-  } catch (err) {
-    console.error(err);
-    openModal("Error", "Failed to save payment");
-  }
-};
-
-
-  const handleMarkAsPaid = (index) => {
-    setPaymentReport((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, status: "Paid" } : item))
-    );
+    setRatePerLecture("");
+    alert("Payment saved successfully");
   };
-
-  const handleViewDetails = (reportItem) => {
-    openModal(
-      `Payment Details: ${reportItem.name}`,
-      `Period: ${reportItem.reportDate}\nLectures: ${
-        reportItem.totalLectures
-      }\nAmount: ₹${reportItem.totalAmount.toFixed(2)}\nStatus: ${
-        reportItem.status
-      }`
-    );
-  };
-
-  const handleGeneratePdf = (reportItem) => {
-    openModal(
-      "PDF Generation",
-      `Generating PDF for ${reportItem.name} (${reportItem.reportDate})`
-    );
-  };
-
-  const CustomModal = ({ title, message }) => (
-    <div className="modal-overlay">
-      <div className="modal-box">
-        <div className="modal-header">{title}</div>
-        <div className="modal-content">{message}</div>
-        <div className="modal-footer">
-          <button onClick={closeModal} className="btn-primary">
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="main-container">
-
-      {/* --- Payment Details Card --- */}
       <div className="card">
         <h1 className="card-title">Payment Details</h1>
 
-        <section className="input-section">
-          <div className="form-row">
-            
-            {/* MONTH FIELD */}
-            <div className="form-group">
-              <label>Month & Year:</label>
-              <input
-                type="month"
-                value={selectedMonth}
-                className={errors.selectedMonth ? "error-input" : ""}
-                onChange={(e) => {
-                  setSelectedMonth(e.target.value);
-                  validateField("selectedMonth", e.target.value);
-                }}
-                onBlur={(e) => validateField("selectedMonth", e.target.value)}
-              />
-              {errors.selectedMonth && (
-                <p className="error-text">{errors.selectedMonth}</p>
-              )}
-            </div>
-
-            {/* PAYMENT TYPE */}
-            <div className="form-group">
-              <label>Payment Type:</label>
-              <div
-                className={`radio-group ${
-                  errors.paymentType ? "error-input" : ""
-                }`}
-              >
-                <label>
-                  <input
-                    type="radio"
-                    checked={paymentType === "Single Teacher Payment"}
-                    value="Single Teacher Payment"
-                    onChange={(e) => {
-                      setPaymentType(e.target.value);
-                      validateField("paymentType", e.target.value);
-                    }}
-                    onBlur={(e) =>
-                      validateField("paymentType", e.target.value)
-                    }
-                  />{" "}
-                  Single
-                </label>
-
-                <label>
-                  <input
-                    type="radio"
-                    checked={paymentType === "Bulk Payment"}
-                    value="Bulk Payment"
-                    onChange={(e) => {
-                      setPaymentType(e.target.value);
-                      validateField("paymentType", e.target.value);
-                    }}
-                    onBlur={(e) =>
-                      validateField("paymentType", e.target.value)
-                    }
-                  />{" "}
-                  Bulk
-                </label>
-              </div>
-
-              {errors.paymentType && (
-                <p className="error-text">{errors.paymentType}</p>
-              )}
-            </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label>Month & Year</label>
+            <input
+              type="month"
+              value={selectedMonth}
+              onBlur={() => markTouched("selectedMonth")}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            />
+            {hasError("selectedMonth", selectedMonth) && (
+              <small className="error">Month is required</small>
+            )}
           </div>
 
-          {/* READONLY FIELDS */}
-          <div className="form-row">
-            <div className="form-group">
-              <label>No of Lectures:</label>
-              <input
-                type="text"
-                readOnly
-                value={fetchedLectures ?? "--auto fetched--"}
-              />
-            </div>
-            <div className="form-group">
-              <label>Rate per Lecture:</label>
-              <input
-                type="text"
-                readOnly
-                value={ratePerLecture ?? "--auto fetched--"}
-              />
-            </div>
-          </div>
-
-          <div className="fetch-row">
-            <button
-              onClick={handleFetch}
-              disabled={loading}
-              className="btn-fetch"
+          <div className="form-group">
+            <label>Teacher</label>
+            <select
+              value={selectedTeacherId}
+              onBlur={() => markTouched("selectedTeacherId")}
+              onChange={(e) => setSelectedTeacherId(e.target.value)}
             >
-              {loading ? "Fetching..." : "Fetch"}
-            </button>
-
-            <div className="amount-display">
-              <span>Payable Amount:</span>
-              <strong>{payableAmountText}</strong>
-            </div>
+              <option value="" hidden>
+                Select Teacher
+              </option>
+              {teachers.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.fullName}
+                </option>
+              ))}
+            </select>
+            {hasError("selectedTeacherId", selectedTeacherId) && (
+              <small className="error">Teacher is required</small>
+            )}
           </div>
-        </section>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Standard</label>
+            <select
+              onBlur={() => markTouched("selectedStandard")}
+              onChange={(e) => {
+                const cls = classList.find((c) => c._id === e.target.value);
+                setSelectedStandard(cls?.name || "");
+                setSection(cls?.section || "");
+              }}
+            >
+              <option value="" hidden>
+                Select Standard
+              </option>
+              {classList.map((cls) => (
+                <option key={cls._id} value={cls._id}>
+                  {cls.name} ({cls.section})
+                </option>
+              ))}
+            </select>
+            {hasError("selectedStandard", selectedStandard) && (
+              <small className="error">Standard is required</small>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label>Section</label>
+            <input readOnly value={section} />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Subject</label>
+            <select
+              value={selectedSubject}
+              onBlur={() => markTouched("selectedSubject")}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              disabled={!selectedTeacher}
+            >
+              <option value="" hidden>
+                Select Subject
+              </option>
+              {selectedTeacher?.subjects?.map((sub, i) => (
+                <option key={i} value={sub}>
+                  {sub}
+                </option>
+              ))}
+            </select>
+            {hasError("selectedSubject", selectedSubject) && (
+              <small className="error">Subject is required</small>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label>Rate per Lecture</label>
+            <input
+              type="number"
+              value={ratePerLecture}
+              onBlur={() => markTouched("ratePerLecture")}
+              onChange={(e) => setRatePerLecture(e.target.value)}
+            />
+            {hasError("ratePerLecture", ratePerLecture) && (
+              <small className="error">Rate is required</small>
+            )}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>No of Lectures</label>
+            <input
+              readOnly
+              value={loadingLectures ? "Fetching..." : fetchedLectures ?? "--"}
+            />
+          </div>
+        </div>
+
+        <button className="btn-fetch" onClick={handleSave}>
+          Save
+        </button>
       </div>
 
-      {/* --- Payment Summary --- */}
+      {/* ===== SUMMARY ===== */}
       <div className="card">
-        <section>
-          <h2 className="section-title">Payment Summary</h2>
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Teacher</th>
-                  <th>Lectures</th>
-                  <th>Amount</th>
-                  <th>Status</th>
+        <h2 className="section-title">Payment Summary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Teacher</th>
+              <th>Subject</th>
+              <th>Lectures</th>
+              <th>Rate</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paymentSummary.length ? (
+              paymentSummary.map((p, i) => (
+                <tr key={i}>
+                  <td>{p.teacherName}</td>
+                  <td>{p.subject}</td>
+                  <td>{p.totalLectures}</td>
+                  <td>₹{p.ratePerLecture}</td>
+                  <td>₹{p.totalAmount}</td>
+                  <td>{p.status}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {paymentSummary.length > 0 ? (
-                  paymentSummary.map((item, i) => (
-                    <tr key={i}>
-                      <td>{item.name}</td>
-                      <td>{item.totalLectures}</td>
-                      <td>₹{item.totalAmount.toFixed(2)}</td>
-                      <td>Pending</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4">
-                      {loading ? "Fetching data..." : "No data yet."}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {paymentSummary.length > 0 && (
-            <button onClick={handleSavePayment} className="btn-save">
-              Save Payment
-            </button>
-          )}
-        </section>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6">No data yet.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
-
-      {/* --- Payment Report --- */}
-      <div className="card">
-        <section>
-          <h2 className="section-title">Report</h2>
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Teacher</th>
-                  <th>Lectures</th>
-                  <th>Amount</th>
-                  <th>View</th>
-                  <th>PDF</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {paymentReport.map((item, i) => (
-                  <tr key={i} className={item.status === "Paid" ? "paid-row" : ""}>
-                    <td>{item.name}</td>
-                    <td>{item.totalLectures}</td>
-                    <td>₹{item.totalAmount.toFixed(2)}</td>
-
-                    <td>
-                      <button
-                        onClick={() => handleViewDetails(item)}
-                        className="icon-btn"
-                      >
-                        <SearchIcon />
-                      </button>
-                    </td>
-
-                    <td>
-                      <button
-                        onClick={() => handleGeneratePdf(item)}
-                        className="icon-btn"
-                      >
-                        <DownloadIcon />
-                      </button>
-                    </td>
-
-                    <td>
-                      {item.status === "Paid" ? (
-                        <CheckSquareIcon className="icon-green" />
-                      ) : (
-                        <button
-                          onClick={() => handleMarkAsPaid(i)}
-                          className="icon-btn"
-                        >
-                          <CheckSquareIcon />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-
-            </table>
-          </div>
-        </section>
-      </div>
-
-      {/* MODAL */}
-      {modalContent && (
-        <CustomModal title={modalContent.title} message={modalContent.message} />
-      )}
     </div>
   );
 };

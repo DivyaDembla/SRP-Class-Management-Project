@@ -23,6 +23,7 @@ export default function TeacherMaster() {
     joiningDate: "",
     status: "Active",
     fileName: "Upload Files",
+    documentFile: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -37,11 +38,32 @@ export default function TeacherMaster() {
 
   const batchesList = ["Batch A", "Batch B", "Batch C", "Batch D"];
 
+  /* ================= FETCH ================= */
   useEffect(() => {
     axios.get(API).then((res) => setTeachers(res.data));
   }, []);
 
-  /* ================= HELPERS ================= */
+  /* ================= VALIDATION ================= */
+  const validateField = (name, value) => {
+    if (!value || !value.trim()) return `${name} is required`;
+    return "";
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, value),
+    }));
+  };
+
+  const inputClass = () => "";
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((p) => ({ ...p, [name]: value }));
+  };
+
   const toggleSelect = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -49,9 +71,40 @@ export default function TeacherMaster() {
         ? prev[field].filter((v) => v !== value)
         : [...prev[field], value],
     }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
+  /* ================= SUBJECTS ================= */
+  const handleSubjectChange = (index, e) => {
+    const updated = [...formData.subjects];
+    updated[index] = e.target.value;
+    setFormData((p) => ({ ...p, subjects: updated }));
+  };
+
+  const addSubjectField = () => {
+    setFormData((p) => ({
+      ...p,
+      subjects: [...p.subjects, ""],
+    }));
+  };
+
+  const removeSubjectField = (index) => {
+    const updated = formData.subjects.filter((_, i) => i !== index);
+    setFormData((p) => ({ ...p, subjects: updated }));
+  };
+
+  /* ================= FILE ================= */
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((p) => ({
+        ...p,
+        documentFile: file,
+        fileName: file.name,
+      }));
+    }
+  };
+
+  /* ================= STATUS ================= */
   const toggleStatus = async (teacher) => {
     const fd = new FormData();
     fd.append("status", teacher.status === "Active" ? "Inactive" : "Active");
@@ -62,16 +115,19 @@ export default function TeacherMaster() {
     );
   };
 
-  const validateField = (name, value) => {
-    if (!value.trim()) return `${name} is required`;
-    return "";
+  /* ================= EDIT ================= */
+  const editTeacher = (teacher) => {
+    setEditingId(teacher._id);
+    setFormData({
+      ...teacher,
+      subjects: teacher.subjects || [""],
+      classes: teacher.classes || [],
+      batches: teacher.batches || [],
+      documentFile: null,
+    });
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
-  };
-
+  /* ================= RESET ================= */
   const resetForm = () => {
     setFormData({
       fullName: "",
@@ -86,19 +142,10 @@ export default function TeacherMaster() {
       joiningDate: "",
       status: "Active",
       fileName: "Upload Files",
+      documentFile: null,
     });
     setErrors({});
     setEditingId(null);
-  };
-
-  const editTeacher = (teacher) => {
-    setEditingId(teacher._id);
-    setFormData({
-      ...teacher,
-      subjects: teacher.subjects || [""],
-      classes: teacher.classes || [],
-      batches: teacher.batches || [],
-    });
   };
 
   /* ================= SUBMIT ================= */
@@ -107,10 +154,14 @@ export default function TeacherMaster() {
 
     const fd = new FormData();
     Object.keys(formData).forEach((k) => {
-      fd.append(
-        k,
-        Array.isArray(formData[k]) ? JSON.stringify(formData[k]) : formData[k]
-      );
+      if (k === "documentFile" && formData[k]) {
+        fd.append(k, formData[k]);
+      } else {
+        fd.append(
+          k,
+          Array.isArray(formData[k]) ? JSON.stringify(formData[k]) : formData[k]
+        );
+      }
     });
 
     let res;
@@ -127,21 +178,204 @@ export default function TeacherMaster() {
     resetForm();
   };
 
+  /* ================= JSX ================= */
   return (
     <div className="teachermaster-content">
-      {/* ================= FORM ================= */}
       <CollapsibleCard title="Teacher Details" defaultOpen={false}>
         <form onSubmit={handleSubmit}>
-          {/* FORM CONTENT UNCHANGED */}
-          {/* ... your existing form JSX stays exactly same ... */}
+          <div className="grid">
+            <div>
+              <label>Full Name:</label>
+              <input
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("fullName")}
+              />
+              {errors.fullName && <p className="error">{errors.fullName}</p>}
+            </div>
+
+            <div>
+              <label>Mobile Number:</label>
+              <input
+                name="mobileNumber"
+                value={formData.mobileNumber}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("mobileNumber")}
+              />
+              {errors.mobileNumber && (
+                <p className="error">{errors.mobileNumber}</p>
+              )}
+            </div>
+
+            <div>
+              <label>Email Address:</label>
+              <input
+                name="emailAddress"
+                value={formData.emailAddress}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("emailAddress")}
+              />
+              {errors.emailAddress && (
+                <p className="error">{errors.emailAddress}</p>
+              )}
+            </div>
+
+            <div>
+              <label>Qualification:</label>
+              <input
+                name="qualification"
+                value={formData.qualification}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("qualification")}
+              />
+              {errors.qualification && (
+                <p className="error">{errors.qualification}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label>Address:</label>
+            <textarea
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              className={inputClass("address")}
+            />
+            {errors.address && <p className="error">{errors.address}</p>}
+          </div>
+
+          <div className="grid">
+            <div>
+              <label>Subjects Handled:</label>
+              {formData.subjects.map((subject, index) => (
+                <div key={index} className="subject-row">
+                  <input
+                    value={subject}
+                    onChange={(e) => handleSubjectChange(index, e)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSubjectField(index)}
+                  >
+                    ✖
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addSubjectField}
+                className="btn-secondary"
+              >
+                + Add Subject
+              </button>
+            </div>
+
+            <div>
+              <label>Assigned Classes:</label>
+              <div className="chip-group">
+                {classesList.map((cls) => (
+                  <span
+                    key={cls}
+                    className={`chip ${
+                      formData.classes.includes(cls) ? "selected" : ""
+                    }`}
+                    onClick={() => toggleSelect("classes", cls)}
+                  >
+                    {cls}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="batches-section">
+            <label>Assigned Batches:</label>
+            <div className="chip-group">
+              {batchesList.map((batch) => (
+                <span
+                  key={batch}
+                  className={`chip ${
+                    formData.batches.includes(batch) ? "selected" : ""
+                  }`}
+                  onClick={() => toggleSelect("batches", batch)}
+                >
+                  {batch}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid">
+            <div>
+              <label>Document Number:</label>
+              <input
+                name="documentNumber"
+                value={formData.documentNumber}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("documentNumber")}
+              />
+              {errors.documentNumber && (
+                <p className="error">{errors.documentNumber}</p>
+              )}
+            </div>
+
+            <div>
+              <label>Joining Date:</label>
+              <input
+                type="date"
+                name="joiningDate"
+                value={formData.joiningDate}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={inputClass("joiningDate")}
+              />
+              {errors.joiningDate && (
+                <p className="error">{errors.joiningDate}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid">
+            <div>
+              <label>Document Upload:</label>
+              <input type="file" onChange={handleFileChange} />
+            </div>
+
+            <div>
+              <label>Status:</label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+              >
+                <option>Active</option>
+                <option>Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="actions">
+            <button type="submit" className="btn-primary">
+              {editingId ? "Update" : "Save"}
+            </button>
+            <button type="button" onClick={resetForm} className="btn-danger">
+              Reset
+            </button>
+          </div>
         </form>
       </CollapsibleCard>
 
-      {/* ================= TEACHER LIST ================= */}
+      {/* ================= LIST ================= */}
       <div className="card">
         <h2 className="title">Teacher's List</h2>
-
-        {/* ✅ TABLE WRAPPED INSIDE CARD */}
         <div className="table-wrapper">
           <table>
             <thead>
@@ -152,44 +386,27 @@ export default function TeacherMaster() {
                 <th>Actions</th>
               </tr>
             </thead>
-
             <tbody>
-              {teachers.length === 0 ? (
-                <tr>
-                  <td colSpan="4" className="empty">
-                    No teachers added yet.
+              {teachers.map((t, i) => (
+                <tr key={t._id}>
+                  <td>{i + 1}</td>
+                  <td>{t.fullName}</td>
+                  <td>{t.joiningDate?.slice(0, 10)}</td>
+                  <td>
+                    <button className="btn-link" onClick={() => editTeacher(t)}>
+                      Edit
+                    </button>
+                    <button
+                      className={`btn-status ${
+                        t.status === "Active" ? "deactivate" : "activate"
+                      }`}
+                      onClick={() => toggleStatus(t)}
+                    >
+                      {t.status === "Active" ? "Deactivate" : "Activate"}
+                    </button>
                   </td>
                 </tr>
-              ) : (
-                teachers.map((teacher, index) => (
-                  <tr key={index}>
-                    <td>{index + 1}</td>
-                    <td>{teacher.fullName}</td>
-                    <td>{teacher.joiningDate}</td>
-                    <td>
-                      <button
-                        className="btn-link"
-                        onClick={() => editTeacher(teacher)}
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        className={`btn-status ${
-                          teacher.status === "Active"
-                            ? "deactivate"
-                            : "activate"
-                        }`}
-                        onClick={() => toggleStatus(teacher)}
-                      >
-                        {teacher.status === "Active"
-                          ? "Deactivate"
-                          : "Activate"}
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         </div>
@@ -198,32 +415,6 @@ export default function TeacherMaster() {
           data={teachers}
           setData={setTeachers}
           tableName="Teacher"
-          columns={[
-            "Full Name",
-            "Mobile Number",
-            "Email Address",
-            "Qualification",
-            "Address",
-            "Subjects",
-            "Classes",
-            "Batches",
-            "Document Number",
-            "Joining Date",
-            "Status",
-          ]}
-          fieldMap={{
-            "Full Name": "fullName",
-            "Mobile Number": "mobileNumber",
-            "Email Address": "emailAddress",
-            Qualification: "qualification",
-            Address: "address",
-            Subjects: "subjects",
-            Classes: "classes",
-            Batches: "batches",
-            "Document Number": "documentNumber",
-            "Joining Date": "joiningDate",
-            Status: "status",
-          }}
         />
       </div>
     </div>

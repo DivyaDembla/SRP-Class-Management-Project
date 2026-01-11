@@ -179,7 +179,7 @@ const AssignRoles = () => {
             <input
               type="text"
               value={username}
-              placeholder="Auto-filled"
+              placeholder=""
               className="input input-disabled"
               disabled
             />
@@ -190,7 +190,7 @@ const AssignRoles = () => {
             <input
               type="text"
               value={location}
-              placeholder="Auto-filled"
+              placeholder=""
               className="input input-disabled"
               disabled
             />
