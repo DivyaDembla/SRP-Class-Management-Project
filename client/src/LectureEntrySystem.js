@@ -33,10 +33,12 @@ const LectureEntrySystem = () => {
 
   /* ---------- FETCH DATA ---------- */
   useEffect(() => {
-    fetchLectures();
-    fetchTeachers();
-    fetchClasses();
-  }, []);
+  fetchLectures();
+  fetchTeachers();
+  fetchClasses();
+  const today = new Date().toISOString().split("T")[0];
+  setDate(today);
+}, []);
 
   const fetchLectures = async () => {
     const res = await axios.get(API);
