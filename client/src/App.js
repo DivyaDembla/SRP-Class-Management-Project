@@ -20,6 +20,7 @@ import AttendanceManagement from "./AttendanceManagement";
 import ExpenseEntryScreen from "./ExpenseEntry";
 import StudentListScreen from "./StudentListScreen";
 import TeacherPayment from "./TeacherPayment";
+import Login from "./Login";
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
           <Route path="teacher-payment" element={<TeacherPayment />} />
           {/* Add other routes as needed */}
         </Route>
+        <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
   );
