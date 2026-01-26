@@ -39,7 +39,7 @@ export default function Sidebar({ isOpen, onClose }) {
         <nav>
           <div className="sidebar-section">
             <p className="section-title">Home</p>
-            <Link className="sidebar-link" to="/" onClick={onClose}>
+            <Link className="sidebar-link" to="/dashboard" onClick={onClose}>
               <Home size={16} /> Dashboard
             </Link>
           </div>

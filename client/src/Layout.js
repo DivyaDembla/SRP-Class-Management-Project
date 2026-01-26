@@ -2,11 +2,18 @@
 import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import "./ClassMaster.css";
-import { Outlet } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Outlet, useNavigate } from "react-router-dom";
+import { Menu, LogOut } from "lucide-react";
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
     <div className="classmaster-root">
@@ -21,6 +28,20 @@ export default function Layout() {
         </button>
 
         <h1>Dashboard</h1>
+
+        {/* Logout button */}
+        <button
+          onClick={handleLogout}
+          style={{
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            color: "white",
+          }}
+          title="Logout"
+        >
+          <LogOut size={20} />
+        </button>
       </header>
 
       <div className="classmaster-container">

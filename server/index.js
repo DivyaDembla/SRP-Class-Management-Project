@@ -68,6 +68,9 @@ app.use("/api/timetable", require("./routes/timetableRoutes"));
 // Lecture Counts
 app.use("/api/lecture-counts", require("./routes/lectureCountRoutes"));
 
+// Auth Routes
+app.use("/api/auth", require("./routes/authRoutes"));
+
 // ----------- Server Start -----------
 const PORT = process.env.PORT || 5000;
 
