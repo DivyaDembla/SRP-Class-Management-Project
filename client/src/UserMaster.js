@@ -4,6 +4,7 @@ import CollapsibleCard from "./CollapsibleCard";
 import "./UserMaster.css";
 
 const API = "http://localhost:5000/api/users";
+const CLASSGROUP_API = "http://localhost:5000/api/class-groups";
 
 /* ================= USER LIST TABLE ================= */
 const UserListTable = ({ users, onEdit }) => {
@@ -23,15 +24,15 @@ const UserListTable = ({ users, onEdit }) => {
                 <th>Name</th>
                 <th>Role</th>
                 <th>Gender</th>
-                <th>Locations</th>
+                <th>Class Groups</th>
                 <th>Action</th>
               </tr>
             </thead>
 
             <tbody>
               {users.map((user) => (
-                <tr key={user.userCode}>
-                  <td>{user.userCode}</td>
+                <tr key={user._id}>
+                  <td>{user.username}</td>
                   <td>{user.name}</td>
                   <td>{user.role}</td>
                   <td>{user.gender}</td>
@@ -56,7 +57,7 @@ const UserListTable = ({ users, onEdit }) => {
 const initialFormData = {
   _id: null,
   name: "",
-  userCode: "",
+  username: "",
   gender: "Male",
   role: "",
   location: [],
@@ -66,68 +67,30 @@ const UserMaster = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [users, setUsers] = useState([]);
+  const [classGroups, setClassGroups] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
   const [errors, setErrors] = useState({});
 
   const editing = useMemo(() => editingUser !== null, [editingUser]);
 
+  /* ================= FETCH DATA ================= */
   useEffect(() => {
     axios.get(API).then((res) => setUsers(res.data));
+    axios.get(CLASSGROUP_API).then((res) => setClassGroups(res.data));
   }, []);
 
   const roles = ["Teacher", "Staff", "Accountant", "Admin"];
-  const locations = ["Chembur", "Mankhur", "Andheri", "Kurla", "Ghatkopar"];
 
-  /* ========== VALIDATION ========== */
-  const validateField = (field, value) => {
-    let msg = "";
-
-    if (field === "name") {
-      if (!value.trim()) msg = "Name is required";
-    }
-
-    if (field === "userCode") {
-      if (!value.trim()) msg = "User name is required";
-      else if (!editing && users.some((u) => u.userCode === value.trim()))
-        msg = "User Code already exists";
-    }
-
-    if (field === "role" && !value) msg = "Select a role";
-
-    if (field === "location" && formData.location.length === 0)
-      msg = "Add at least one location";
-
-    setErrors((p) => ({ ...p, [field]: msg }));
-  };
+  /* ================= INPUT HANDLING ================= */
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
-    validateField(name, value);
-  };
-
-  const handleAddLocation = () => {
-    if (selectedLocation && !formData.location.includes(selectedLocation)) {
-      setFormData((p) => ({
-        ...p,
-        location: [...p.location, selectedLocation],
-      }));
-      setSelectedLocation("");
-      validateField("location");
-    }
-  };
-
-  const handleRemoveLocation = (loc) => {
-    setFormData((p) => ({
-      ...p,
-      location: p.location.filter((l) => l !== loc),
-    }));
-    validateField("location");
   };
 
   const handleEdit = (user) => {
     setEditingUser(user);
-    setFormData(user);
+    setFormData({ ...user });
     setErrors({});
   };
 
@@ -138,33 +101,53 @@ const UserMaster = () => {
     setErrors({});
   };
 
-  const handleSaveOrUpdate = async (e) => {
-    e.preventDefault();
+  /* ================= SAVE / UPDATE ================= */
 
-    validateField("name", formData.name);
-    validateField("userCode", formData.userCode);
-    validateField("role", formData.role);
-    validateField("location");
+  const handleSaveOrUpdate = async () => {
+    const newErrors = {};
 
-    if (Object.values(errors).some((e) => e)) return;
+    if (!formData.name.trim()) newErrors.name = "Name is required";
 
-    if (editing) {
-      const res = await axios.put(`${API}/${formData._id}`, formData);
-      setUsers((p) => p.map((u) => (u._id === res.data._id ? res.data : u)));
-      alert("User updated successfully");
-    } else {
-      const res = await axios.post(API, formData);
-      setUsers((p) => [...p, res.data]);
-      alert("User added successfully");
+    if (!formData.username.trim()) newErrors.username = "Username is required";
+    else if (
+      !editing &&
+      users.some((u) => u.username === formData.username.trim())
+    )
+      newErrors.username = "Username already exists";
+
+    if (!formData.role) newErrors.role = "Select a role";
+
+    if (formData.location.length === 0)
+      newErrors.location = "Add a class group";
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    try {
+      if (editing) {
+        const res = await axios.put(`${API}/${formData._id}`, formData);
+        setUsers((p) => p.map((u) => (u._id === res.data._id ? res.data : u)));
+        alert("User updated successfully");
+      } else {
+        const res = await axios.post(API, formData);
+        setUsers((p) => [...p, res.data]);
+
+        alert(`User created!
+Login Credentials save`);
+      }
+
+      handleReset();
+    } catch (err) {
+      alert(err.response?.data?.message || "Server error");
     }
-
-    handleReset();
   };
+
+  /* ================= UI ================= */
 
   return (
     <div className="usermaster-content">
       <CollapsibleCard title="User Master" defaultOpen={false}>
-        <form onSubmit={handleSaveOrUpdate}>
+        <form>
           <div className="form-grid">
             <div>
               <label>Name *</label>
@@ -182,14 +165,14 @@ const UserMaster = () => {
               <label>Username *</label>
               <input
                 type="text"
-                name="userCode"
-                value={formData.userCode}
+                name="username"
+                value={formData.username}
                 onChange={handleInputChange}
                 disabled={editing}
-                className={errors.userCode ? "input-error" : ""}
+                className={errors.username ? "input-error" : ""}
               />
-              {errors.userCode && (
-                <span className="error">{errors.userCode}</span>
+              {errors.username && (
+                <span className="error">{errors.username}</span>
               )}
             </div>
           </div>
@@ -233,39 +216,30 @@ const UserMaster = () => {
               {errors.role && <span className="error">{errors.role}</span>}
             </div>
 
-            <div className="location-control">
-              <label>Location(s) *</label>
-              <div className="location-select-add">
-                <select
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                >
-                  <option value="">Select Location</option>
-                  {locations.map((l) => (
-                    <option key={l} value={l}>
-                      {l}
+            {/* CLASS GROUP DROPDOWN */}
+            <div>
+              <label>Class Group *</label>
+              <select
+                value={formData.location[0] || ""}
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    location: [e.target.value],
+                  }))
+                }
+                className={errors.location ? "input-error" : ""}
+              >
+                <option value="">Select Class Group</option>
+
+                {classGroups.map((cg) => {
+                  const label = `${cg.className} - ${cg.location}`;
+                  return (
+                    <option key={cg._id} value={label}>
+                      {label}
                     </option>
-                  ))}
-                </select>
-
-                <button type="button" onClick={handleAddLocation}>
-                  Add
-                </button>
-              </div>
-
-              <div className="location-tags">
-                {formData.location.map((loc) => (
-                  <span key={loc} className="location-tag">
-                    {loc}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveLocation(loc)}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
+                  );
+                })}
+              </select>
 
               {errors.location && (
                 <span className="error">{errors.location}</span>
@@ -275,17 +249,19 @@ const UserMaster = () => {
 
           <div className="button-group">
             <button
-              type="submit"
+              type="button"
               className="btn-form btn-save-mode"
               disabled={editing}
+              onClick={handleSaveOrUpdate}
             >
               Save
             </button>
 
             <button
-              type="submit"
+              type="button"
               className="btn-form btn-update-mode"
               disabled={!editing}
+              onClick={handleSaveOrUpdate}
             >
               Update
             </button>
@@ -301,7 +277,6 @@ const UserMaster = () => {
         </form>
       </CollapsibleCard>
 
-      {/* USER LIST */}
       <UserListTable users={users} onEdit={handleEdit} />
     </div>
   );

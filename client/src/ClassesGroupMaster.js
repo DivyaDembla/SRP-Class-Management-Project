@@ -4,6 +4,7 @@ import CollapsibleCard from "./CollapsibleCard";
 import "./ClassesGroupMaster.css";
 
 const API = "http://localhost:5000/api/class-groups";
+const LOCATION_API = "http://localhost:5000/api/locations";
 
 /* ================= CLASS GROUP LIST ================= */
 const ClassesGroupList = ({ groups, onEdit }) => (
@@ -67,20 +68,43 @@ const ClassesGroupMaster = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [groups, setGroups] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [editingGroup, setEditingGroup] = useState(null);
 
   const editing = useMemo(() => editingGroup !== null, [editingGroup]);
 
+  /* ================= FETCH DATA ================= */
   useEffect(() => {
     axios.get(API).then((res) => setGroups(res.data));
+    axios.get(LOCATION_API).then((res) => setLocations(res.data));
   }, []);
 
+  /* ================= HANDLE INPUT ================= */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // autofill when location selected
+    if (name === "location") {
+      const selected = locations.find(
+        (loc) => `${loc.locationName} - ${loc.pincode}` === value,
+      );
+
+      if (selected) {
+        setFormData((prev) => ({
+          ...prev,
+          location: value,
+          city: selected.city || "",
+          pinCode: selected.pincode || "",
+        }));
+        return;
+      }
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
     validateField(name, value);
   };
 
+  /* ================= VALIDATION ================= */
   const validateField = (name, value) => {
     let errorMsg = "";
 
@@ -99,18 +123,24 @@ const ClassesGroupMaster = () => {
     setErrors((prev) => ({ ...prev, [name]: errorMsg }));
   };
 
+  /* ================= EDIT ================= */
+  const handleEdit = (group) => {
+    setEditingGroup(group);
+    setFormData({
+      ...group,
+      location: group.location,
+    });
+    setErrors({});
+  };
+
+  /* ================= RESET ================= */
   const handleReset = () => {
     setFormData(initialFormData);
     setErrors({});
     setEditingGroup(null);
   };
 
-  const handleEdit = (group) => {
-    setEditingGroup(group);
-    setFormData(group);
-    setErrors({});
-  };
-
+  /* ================= SAVE / UPDATE ================= */
   const handleSaveOrUpdate = async (e) => {
     e.preventDefault();
 
@@ -128,7 +158,7 @@ const ClassesGroupMaster = () => {
       if (editing) {
         const res = await axios.put(`${API}/${editingGroup._id}`, formData);
         setGroups((prev) =>
-          prev.map((g) => (g._id === editingGroup._id ? res.data : g))
+          prev.map((g) => (g._id === editingGroup._id ? res.data : g)),
         );
         alert("✅ Updated successfully");
       } else {
@@ -153,18 +183,30 @@ const ClassesGroupMaster = () => {
       >
         <form onSubmit={handleSaveOrUpdate}>
           <div className="form-grid">
+            {/* LOCATION DROPDOWN */}
             <div>
               <label className="label">Location *</label>
-              <input
-                type="text"
+              <select
                 name="location"
-                value={formData.location}
+                value={formData.location || ""}
                 onChange={handleInputChange}
                 className="input"
-              />
+              >
+                <option value="">-- Select Location --</option>
+
+                {locations.map((loc) => {
+                  const label = `${loc.locationName} - ${loc.pincode}`;
+                  return (
+                    <option key={loc._id} value={label}>
+                      {label} ({loc.city})
+                    </option>
+                  );
+                })}
+              </select>
               {errors.location && <p className="error">{errors.location}</p>}
             </div>
 
+            {/* CLASS NAME */}
             <div>
               <label className="label">Class Name *</label>
               <input
@@ -197,13 +239,14 @@ const ClassesGroupMaster = () => {
               />
             </div>
 
+            {/* AUTO FILLED */}
             <div>
               <label className="label">City</label>
               <input
                 type="text"
                 name="city"
                 value={formData.city}
-                onChange={handleInputChange}
+                readOnly
                 className="input"
               />
             </div>
@@ -214,10 +257,9 @@ const ClassesGroupMaster = () => {
                 type="text"
                 name="pinCode"
                 value={formData.pinCode}
-                onChange={handleInputChange}
+                readOnly
                 className="input"
               />
-              {errors.pinCode && <p className="error">{errors.pinCode}</p>}
             </div>
 
             <div>
@@ -256,17 +298,12 @@ const ClassesGroupMaster = () => {
           </div>
 
           <div className="button-group">
-            {!editing && (
-              <button type="submit" className="btn-form btn-save-mode">
-                Save
-              </button>
-            )}
-
-            {editing && (
-              <button type="submit" className="btn-form btn-update-mode">
-                Update
-              </button>
-            )}
+            <button
+              type="submit"
+              className={`btn-form ${editing ? "btn-update-mode" : "btn-save-mode"}`}
+            >
+              {editing ? "Update" : "Save"}
+            </button>
 
             <button
               type="button"

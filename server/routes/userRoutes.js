@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+const AuthUser = require("../models/AuthUser");
 
-// GET all users
+/* ================= GET ALL USERS ================= */
 router.get("/", async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
@@ -12,27 +14,51 @@ router.get("/", async (req, res) => {
   }
 });
 
-// CREATE user
+/* ================= CREATE USER + LOGIN ACCOUNT ================= */
 router.post("/", async (req, res) => {
   try {
-    const { name, userCode, gender, role, location } = req.body;
+    const { name, username, gender, role, location } = req.body;
 
+    /* ---- Check duplicate user master ---- */
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    /* ---- Save user master ---- */
     const newUser = new User({
       name,
-      userCode,
+      username,
       gender,
       role,
       location,
     });
 
-    const saved = await newUser.save();
-    res.status(201).json(saved);
+    const savedUser = await newUser.save();
+
+    /* ---- Create login account automatically ---- */
+    const existingAuth = await AuthUser.findOne({ username });
+
+    if (!existingAuth) {
+      const hashedPassword = await bcrypt.hash(username, 10);
+
+      const loginUser = new AuthUser({
+        name,
+        username,
+        password: hashedPassword,
+      });
+
+      await loginUser.save();
+    }
+
+    res.status(201).json(savedUser);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// UPDATE user by ID
+/* ================= UPDATE USER ================= */
 router.put("/:id", async (req, res) => {
   try {
     const updated = await User.findByIdAndUpdate(req.params.id, req.body, {

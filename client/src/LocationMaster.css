@@ -1,8 +1,8 @@
 /* Container Layout */
 .location-container {
-  background-color: #f3f4f6; /* gray-100 */
+  background-color: #f3f4f6;
   min-height: 100vh;
-  color: #1f2937; /* gray-800 */
+  color: #1f2937;
   padding: 2rem;
   display: flex;
 }
@@ -27,49 +27,55 @@
   margin-bottom: 1.5rem;
 }
 
-/* Form */
+/* ---------------- FORM GRID ---------------- */
+
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
   margin-bottom: 1.5rem;
 }
 
-@media (min-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+/* full width row (address) */
+.grid-full {
+  grid-column: 1 / -1;
 }
 
-.grid-full {
-  grid-column: span 2;
+/* field block */
+.field {
+  display: flex;
+  flex-direction: column;
 }
+
+/* ---------------- INPUTS ---------------- */
 
 .form-label {
-  display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151; /* gray-700 */
-  margin-bottom: 0.25rem;
+  color: #374151;
+  margin-bottom: 4px;
 }
 
 .form-input,
 .form-textarea {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #d1d5db; /* gray-300 */
+  border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .form-input:focus,
 .form-textarea:focus {
-  border-color: #2563eb; /* blue-600 */
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
 }
 
-/* Buttons */
+/* ---------------- BUTTONS ---------------- */
+
 .button-group {
   display: flex;
   gap: 1rem;
@@ -79,26 +85,29 @@
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 500;
+  cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .btn-primary {
-  background-color: #2563eb; /* blue-600 */
+  background-color: #2563eb;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #1d4ed8; /* blue-700 */
+  background-color: #1d4ed8;
 }
 
 .btn-secondary {
-  background-color: #d1d5db; /* gray-300 */
-  color: #374151; /* gray-700 */
+  background-color: #d1d5db;
+  color: #374151;
 }
 
 .btn-secondary:hover {
-  background-color: #9ca3af; /* gray-400 */
+  background-color: #9ca3af;
 }
+
+/* ---------------- ERRORS ---------------- */
 
 .input-error {
   border: 1px solid red;
@@ -107,10 +116,11 @@
 .error {
   color: red;
   font-size: 0.85rem;
-  margin-top: 2px;
-  display: block;
+  margin-top: 3px;
 }
-/* ---- Table ---- */
+
+/* ---------------- TABLE ---------------- */
+
 .table-container {
   overflow-x: auto;
   margin-top: 1rem;

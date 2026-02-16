@@ -3,17 +3,38 @@ const mongoose = require("mongoose");
 const LocationSchema = new mongoose.Schema(
   {
     locationId: {
-      type: String,required: true,trim: true,uppercase: true,
-      match: [/^[A-Z0-9]{2,10}$/, "Invalid Location ID"],unique: true,
+      type: String,
+      required: true,
+      unique: true,
+      uppercase: true,
+      trim: true,
     },
-    locationName: { type: String, required: true, trim: true },
+
+    locationName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    pincode: {
+      type: String,
+      required: true,
+      match: [/^[1-9][0-9]{5}$/, "Invalid Indian pincode"],
+    },
+
     locationCode: {
-      type: String,required: true,trim: true,uppercase: true,
-      match: [/^[A-Z0-9]{2,10}$/, "Invalid Location Code"],unique: true,
+      type: String,
+      required: true,
+      unique: true,
     },
-    address: { type: String, required: true, trim: true },
+
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Location", LocationSchema);
