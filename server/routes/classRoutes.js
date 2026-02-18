@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
       section: req.body.section,
       description: req.body.description,
       status: req.body.status || "Active",
-      financialYear: req.body.financialYear,
+      academicYear: req.body.academicYear, // ✅
     });
 
     const saved = await newClass.save();
@@ -46,11 +46,12 @@ router.put("/:id", async (req, res) => {
         section: req.body.section,
         description: req.body.description,
         status: req.body.status,
+        academicYear: req.body.academicYear, // ✅
       },
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
 
     if (!updated) {

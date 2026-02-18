@@ -29,6 +29,7 @@ import AttendanceManagement from "./AttendanceManagement";
 import ExpenseEntryScreen from "./ExpenseEntry";
 import StudentListScreen from "./StudentListScreen";
 import TeacherPayment from "./TeacherPayment";
+import SubjectMaster from "./SubjectMaster";
 
 function App() {
   return (
@@ -78,6 +79,7 @@ function App() {
           <Route path="/expense-entry" element={<ExpenseEntryScreen />} />
           <Route path="/student-list" element={<StudentListScreen />} />
           <Route path="/teacher-payment" element={<TeacherPayment />} />
+          <Route path="/subject-master" element={<SubjectMaster />} />
         </Route>
       </Routes>
     </Router>

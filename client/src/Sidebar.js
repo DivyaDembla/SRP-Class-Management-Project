@@ -20,8 +20,30 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import "./Sidebar.css";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function Sidebar({ isOpen, onClose }) {
+  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // first load
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    setCurrentUser(user);
+  }, []);
+
+  // realtime updates
+  useEffect(() => {
+    const syncUser = () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      setCurrentUser(user);
+    };
+
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+
   return (
     <>
       {/* Overlay (mobile) */}
@@ -95,10 +117,10 @@ export default function Sidebar({ isOpen, onClose }) {
             </Link>
             <Link
               className="sidebar-link"
-              to="/holiday-master"
+              to="/subject-master"
               onClick={onClose}
             >
-              <CalendarDays size={16} /> <span>Holiday Master</span>
+              <CalendarDays size={16} /> <span>Subject Master</span>
             </Link>
           </div>
 
@@ -148,11 +170,13 @@ export default function Sidebar({ isOpen, onClose }) {
           </div>
         </nav>
 
-        {/* Footer */}
-        <div className="sidebar-footer">
+        <div
+          className="sidebar-footer clickable"
+          onClick={() => navigate("/profile")}
+        >
           <div>
-            <p className="username">Rahul Gupta</p>
-            <p className="role">Admin</p>
+            <p className="username">{currentUser?.name}</p>
+            <p className="role">{currentUser?.role}</p>
           </div>
           <Settings size={18} />
         </div>

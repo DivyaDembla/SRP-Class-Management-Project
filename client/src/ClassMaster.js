@@ -23,7 +23,7 @@ export default function ClassMaster() {
     axios.get(API).then((res) => setClasses(res.data));
   }, []);
 
-  const getFinancialYear = () => {
+  const getAcademicYear = () => {
     const d = new Date();
     const y = d.getFullYear();
     const m = d.getMonth() + 1;
@@ -67,7 +67,7 @@ export default function ClassMaster() {
     const duplicate = classes.some(
       (c) =>
         normalizeKey(c.name, c.section) === key &&
-        (editing ? c._id !== form._id : true)
+        (editing ? c._id !== form._id : true),
     );
 
     if (duplicate) {
@@ -94,7 +94,7 @@ export default function ClassMaster() {
       section: form.section.trim(),
       description: form.description.trim(),
       status: form.status,
-      financialYear: getFinancialYear(),
+      academicYear: getAcademicYear(),
     };
 
     const res = await axios.post(API, payload);
@@ -115,11 +115,12 @@ export default function ClassMaster() {
       section: form.section.trim(),
       description: form.description.trim(),
       status: form.status,
+      academicYear: getAcademicYear(),
     };
 
     const res = await axios.put(`${API}/${form._id}`, payload);
     setClasses((prev) =>
-      prev.map((c) => (c._id === res.data._id ? res.data : c))
+      prev.map((c) => (c._id === res.data._id ? res.data : c)),
     );
     resetForm();
   };
@@ -127,7 +128,7 @@ export default function ClassMaster() {
   const handleToggle = async (id) => {
     const res = await axios.patch(`${API}/${id}/toggle`);
     setClasses((prev) =>
-      prev.map((c) => (c._id === res.data._id ? res.data : c))
+      prev.map((c) => (c._id === res.data._id ? res.data : c)),
     );
   };
 
@@ -217,7 +218,7 @@ export default function ClassMaster() {
                 <th>Class Name</th>
                 <th>Section</th>
                 <th>Description</th>
-                <th>Financial Year</th>
+                <th>Academic Year</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -236,7 +237,7 @@ export default function ClassMaster() {
                     <td>{row.name}</td>
                     <td>{row.section}</td>
                     <td>{row.description}</td>
-                    <td>{row.financialYear}</td>
+                    <td>{row.academicYear}</td>
                     <td>{row.status}</td>
                     <td className="action-cell">
                       <button

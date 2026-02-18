@@ -71,6 +71,8 @@ app.use("/api/lecture-counts", require("./routes/lectureCountRoutes"));
 // Auth Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 
+// Subject Master
+app.use("/api/subjects", require("./routes/subjectRoutes"));
 // ----------- Server Start -----------
 const PORT = process.env.PORT || 5000;
 

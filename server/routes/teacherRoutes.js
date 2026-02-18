@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const Teacher = require("../models/Teacher");
 
-// Storage settings for documents
+// ================= MULTER CONFIG =================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/teachers"),
   filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
@@ -11,9 +11,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// ---------------------------------------------------
+// =================================================
 // GET ALL TEACHERS
-// ---------------------------------------------------
+// =================================================
 router.get("/", async (req, res) => {
   try {
     const teachers = await Teacher.find().sort({ createdAt: -1 });
@@ -23,48 +23,61 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ---------------------------------------------------
+// =================================================
 // CREATE TEACHER
-// ---------------------------------------------------
+// =================================================
 router.post("/", upload.single("documentFile"), async (req, res) => {
   try {
-    const newTeacher = new Teacher({
-      ...req.body,
-      subjects: JSON.parse(req.body.subjects),
-      classes: JSON.parse(req.body.classes),
-      batches: JSON.parse(req.body.batches),
-      documentFile: req.file ? req.file.filename : null,
-    });
+    const teacherData = {
+      fullName: req.body.fullName,
+      mobileNumber: req.body.mobileNumber,
+      emailAddress: req.body.emailAddress,
+      qualification: req.body.qualification,
+      address: req.body.address,
+      documentNumber: req.body.documentNumber,
+      joiningDate: req.body.joiningDate,
+      status: req.body.status,
+      fileName: req.body.fileName,
 
+      // ⭐ parse mapping array
+      teachingAssignments: JSON.parse(req.body.teachingAssignments || "[]"),
+
+      documentFile: req.file ? req.file.filename : null,
+    };
+
+    const newTeacher = new Teacher(teacherData);
     const saved = await newTeacher.save();
+
     res.status(201).json(saved);
   } catch (err) {
+    console.log("CREATE ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ---------------------------------------------------
-// UPDATE TEACHER BY ID
-// ---------------------------------------------------
-// ---------------------------------------------------
-// UPDATE TEACHER BY ID
-// ---------------------------------------------------
+// =================================================
+// UPDATE TEACHER
+// =================================================
 router.put("/:id", upload.single("documentFile"), async (req, res) => {
   try {
-    const updatedData = { ...req.body };
+    const updatedData = {
+      fullName: req.body.fullName,
+      mobileNumber: req.body.mobileNumber,
+      emailAddress: req.body.emailAddress,
+      qualification: req.body.qualification,
+      address: req.body.address,
+      documentNumber: req.body.documentNumber,
+      joiningDate: req.body.joiningDate,
+      status: req.body.status,
+      fileName: req.body.fileName,
+    };
 
-    // Parse JSON arrays sent from FormData
-    if (req.body.subjects) {
-      updatedData.subjects = JSON.parse(req.body.subjects);
-    }
-    if (req.body.classes) {
-      updatedData.classes = JSON.parse(req.body.classes);
-    }
-    if (req.body.batches) {
-      updatedData.batches = JSON.parse(req.body.batches);
+    if (req.body.teachingAssignments) {
+      updatedData.teachingAssignments = JSON.parse(
+        req.body.teachingAssignments,
+      );
     }
 
-    // Handle file upload (if new file is selected)
     if (req.file) {
       updatedData.documentFile = req.file.filename;
     }
@@ -72,7 +85,7 @@ router.put("/:id", upload.single("documentFile"), async (req, res) => {
     const updated = await Teacher.findByIdAndUpdate(
       req.params.id,
       updatedData,
-      { new: true }
+      { new: true },
     );
 
     res.json(updated);
@@ -82,9 +95,9 @@ router.put("/:id", upload.single("documentFile"), async (req, res) => {
   }
 });
 
-// ---------------------------------------------------
+// =================================================
 // DELETE TEACHER
-// ---------------------------------------------------
+// =================================================
 router.delete("/:id", async (req, res) => {
   try {
     await Teacher.findByIdAndDelete(req.params.id);

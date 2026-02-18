@@ -16,9 +16,9 @@ export default function TeacherMaster() {
     emailAddress: "",
     qualification: "",
     address: "",
-    subjects: [""],
-    classes: [],
-    batches: [],
+
+    teachingAssignments: [{ classId: "", standard: "", subjects: [] }],
+
     documentNumber: "",
     joiningDate: "",
     status: "Active",
@@ -27,21 +27,36 @@ export default function TeacherMaster() {
   });
 
   const [errors, setErrors] = useState({});
-
-  const classesList = [
-    "7th Standard",
-    "8th Standard",
-    "9th Standard",
-    "10th Standard",
-    "11th Standard",
-  ];
-
-  const batchesList = ["Batch A", "Batch B", "Batch C", "Batch D"];
+  const [classList, setClassList] = useState([]);
+  const [subjectMap, setSubjectMap] = useState({});
 
   /* ================= FETCH ================= */
   useEffect(() => {
-    axios.get(API).then((res) => setTeachers(res.data));
+    loadInitialData();
   }, []);
+
+  const loadInitialData = async () => {
+    try {
+      const [teacherRes, classRes, subjectRes] = await Promise.all([
+        axios.get(API),
+        axios.get("http://localhost:5000/api/classes"),
+        axios.get("http://localhost:5000/api/subjects"),
+      ]);
+
+      setTeachers(teacherRes.data);
+      setClassList(classRes.data);
+
+      // map classId -> subjects[]
+      const map = {};
+      subjectRes.data.forEach((s) => {
+        map[s.classId] = s.subjects;
+      });
+
+      setSubjectMap(map);
+    } catch (err) {
+      console.error("Load error", err);
+    }
+  };
 
   /* ================= VALIDATION ================= */
   const validateField = (name, value) => {
@@ -64,34 +79,6 @@ export default function TeacherMaster() {
     setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  const toggleSelect = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].includes(value)
-        ? prev[field].filter((v) => v !== value)
-        : [...prev[field], value],
-    }));
-  };
-
-  /* ================= SUBJECTS ================= */
-  const handleSubjectChange = (index, e) => {
-    const updated = [...formData.subjects];
-    updated[index] = e.target.value;
-    setFormData((p) => ({ ...p, subjects: updated }));
-  };
-
-  const addSubjectField = () => {
-    setFormData((p) => ({
-      ...p,
-      subjects: [...p.subjects, ""],
-    }));
-  };
-
-  const removeSubjectField = (index) => {
-    const updated = formData.subjects.filter((_, i) => i !== index);
-    setFormData((p) => ({ ...p, subjects: updated }));
-  };
-
   /* ================= FILE ================= */
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -111,18 +98,29 @@ export default function TeacherMaster() {
 
     const res = await axios.put(`${API}/${teacher._id}`, fd);
     setTeachers((prev) =>
-      prev.map((t) => (t._id === teacher._id ? res.data : t))
+      prev.map((t) => (t._id === teacher._id ? res.data : t)),
     );
   };
 
   /* ================= EDIT ================= */
   const editTeacher = (teacher) => {
     setEditingId(teacher._id);
+
     setFormData({
-      ...teacher,
-      subjects: teacher.subjects || [""],
-      classes: teacher.classes || [],
-      batches: teacher.batches || [],
+      fullName: teacher.fullName || "",
+      mobileNumber: teacher.mobileNumber || "",
+      emailAddress: teacher.emailAddress || "",
+      qualification: teacher.qualification || "",
+      address: teacher.address || "",
+
+      teachingAssignments: teacher.teachingAssignments?.length
+        ? teacher.teachingAssignments
+        : [{ classId: "", standard: "", subjects: [] }],
+
+      documentNumber: teacher.documentNumber || "",
+      joiningDate: teacher.joiningDate?.slice(0, 10) || "",
+      status: teacher.status || "Active",
+      fileName: teacher.fileName || "Upload Files",
       documentFile: null,
     });
   };
@@ -135,15 +133,14 @@ export default function TeacherMaster() {
       emailAddress: "",
       qualification: "",
       address: "",
-      subjects: [""],
-      classes: [],
-      batches: [],
+      teachingAssignments: [{ classId: "", standard: "", subjects: [] }],
       documentNumber: "",
       joiningDate: "",
       status: "Active",
       fileName: "Upload Files",
       documentFile: null,
     });
+
     setErrors({});
     setEditingId(null);
   };
@@ -153,22 +150,32 @@ export default function TeacherMaster() {
     e.preventDefault();
 
     const fd = new FormData();
-    Object.keys(formData).forEach((k) => {
-      if (k === "documentFile" && formData[k]) {
-        fd.append(k, formData[k]);
-      } else {
-        fd.append(
-          k,
-          Array.isArray(formData[k]) ? JSON.stringify(formData[k]) : formData[k]
-        );
-      }
-    });
+
+    fd.append("fullName", formData.fullName);
+    fd.append("mobileNumber", formData.mobileNumber);
+    fd.append("emailAddress", formData.emailAddress);
+    fd.append("qualification", formData.qualification);
+    fd.append("address", formData.address);
+    fd.append("documentNumber", formData.documentNumber);
+    fd.append("joiningDate", formData.joiningDate);
+    fd.append("status", formData.status);
+    fd.append("fileName", formData.fileName);
+
+    fd.append(
+      "teachingAssignments",
+      JSON.stringify(formData.teachingAssignments),
+    );
+
+    if (formData.documentFile) {
+      fd.append("documentFile", formData.documentFile);
+    }
 
     let res;
+
     if (editingId) {
       res = await axios.put(`${API}/${editingId}`, fd);
       setTeachers((prev) =>
-        prev.map((t) => (t._id === editingId ? res.data : t))
+        prev.map((t) => (t._id === editingId ? res.data : t)),
       );
     } else {
       res = await axios.post(API, fd);
@@ -178,11 +185,55 @@ export default function TeacherMaster() {
     resetForm();
   };
 
+  const addAssignment = () => {
+    setFormData((p) => ({
+      ...p,
+      teachingAssignments: [
+        ...p.teachingAssignments,
+        { classId: "", standard: "", subjects: [] },
+      ],
+    }));
+  };
+
+  const handleClassChange = (index, classId) => {
+    const cls = classList.find((c) => c._id === classId);
+
+    if (!cls) return;
+
+    const updated = [...formData.teachingAssignments];
+    updated[index] = {
+      classId,
+      standard: `${cls.name} ${cls.section}`,
+      subjects: [],
+    };
+
+    setFormData((p) => ({ ...p, teachingAssignments: updated }));
+  };
+
+  const removeAssignment = (index) => {
+    const updated = formData.teachingAssignments.filter((_, i) => i !== index);
+    setFormData((p) => ({ ...p, teachingAssignments: updated }));
+  };
+
+  const toggleSubject = (index, subject) => {
+    const updated = [...formData.teachingAssignments];
+    const subjects = updated[index].subjects || [];
+
+    if (subjects.includes(subject)) {
+      updated[index].subjects = subjects.filter((s) => s !== subject);
+    } else {
+      updated[index].subjects = [...subjects, subject];
+    }
+
+    setFormData((p) => ({ ...p, teachingAssignments: updated }));
+  };
+
   /* ================= JSX ================= */
   return (
     <div className="teachermaster-content">
-      <CollapsibleCard title="Teacher Details" defaultOpen={false}>
-        <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
+        {/* ================= PERSONAL DETAILS ================= */}
+        <CollapsibleCard title="Teacher Personal Details" defaultOpen={false}>
           <div className="grid">
             <div>
               <label>Full Name:</label>
@@ -191,7 +242,6 @@ export default function TeacherMaster() {
                 value={formData.fullName}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={inputClass("fullName")}
               />
               {errors.fullName && <p className="error">{errors.fullName}</p>}
             </div>
@@ -203,7 +253,6 @@ export default function TeacherMaster() {
                 value={formData.mobileNumber}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={inputClass("mobileNumber")}
               />
               {errors.mobileNumber && (
                 <p className="error">{errors.mobileNumber}</p>
@@ -217,7 +266,6 @@ export default function TeacherMaster() {
                 value={formData.emailAddress}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={inputClass("emailAddress")}
               />
               {errors.emailAddress && (
                 <p className="error">{errors.emailAddress}</p>
@@ -231,7 +279,6 @@ export default function TeacherMaster() {
                 value={formData.qualification}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={inputClass("qualification")}
               />
               {errors.qualification && (
                 <p className="error">{errors.qualification}</p>
@@ -246,70 +293,8 @@ export default function TeacherMaster() {
               value={formData.address}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              className={inputClass("address")}
             />
             {errors.address && <p className="error">{errors.address}</p>}
-          </div>
-
-          <div className="grid">
-            <div>
-              <label>Subjects Handled:</label>
-              {formData.subjects.map((subject, index) => (
-                <div key={index} className="subject-row">
-                  <input
-                    value={subject}
-                    onChange={(e) => handleSubjectChange(index, e)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeSubjectField(index)}
-                  >
-                    ✖
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addSubjectField}
-                className="btn-secondary"
-              >
-                + Add Subject
-              </button>
-            </div>
-
-            <div>
-              <label>Assigned Classes:</label>
-              <div className="chip-group">
-                {classesList.map((cls) => (
-                  <span
-                    key={cls}
-                    className={`chip ${
-                      formData.classes.includes(cls) ? "selected" : ""
-                    }`}
-                    onClick={() => toggleSelect("classes", cls)}
-                  >
-                    {cls}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="batches-section">
-            <label>Assigned Batches:</label>
-            <div className="chip-group">
-              {batchesList.map((batch) => (
-                <span
-                  key={batch}
-                  className={`chip ${
-                    formData.batches.includes(batch) ? "selected" : ""
-                  }`}
-                  onClick={() => toggleSelect("batches", batch)}
-                >
-                  {batch}
-                </span>
-              ))}
-            </div>
           </div>
 
           <div className="grid">
@@ -320,7 +305,6 @@ export default function TeacherMaster() {
                 value={formData.documentNumber}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={inputClass("documentNumber")}
               />
               {errors.documentNumber && (
                 <p className="error">{errors.documentNumber}</p>
@@ -335,7 +319,6 @@ export default function TeacherMaster() {
                 value={formData.joiningDate}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={inputClass("joiningDate")}
               />
               {errors.joiningDate && (
                 <p className="error">{errors.joiningDate}</p>
@@ -361,17 +344,63 @@ export default function TeacherMaster() {
               </select>
             </div>
           </div>
+        </CollapsibleCard>
 
-          <div className="actions">
-            <button type="submit" className="btn-primary">
-              {editingId ? "Update" : "Save"}
-            </button>
-            <button type="button" onClick={resetForm} className="btn-danger">
-              Reset
-            </button>
-          </div>
-        </form>
-      </CollapsibleCard>
+        {/* ================= TEACHING ASSIGNMENT ================= */}
+        <CollapsibleCard title="Teaching Assignment" defaultOpen={false}>
+          {formData.teachingAssignments.map((row, index) => (
+            <div className="assignment-box" key={index}>
+              <div className="form-group">
+                <label>Class:</label>
+                <select
+                  value={row.classId}
+                  onChange={(e) => handleClassChange(index, e.target.value)}
+                >
+                  <option value="">Select Class</option>
+                  {classList.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.name} {c.section}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Subjects:</label>
+                <div className="chip-group">
+                  {(subjectMap[row.classId] || []).map((sub) => (
+                    <span
+                      key={sub}
+                      className={`chip ${row.subjects.includes(sub) ? "selected" : ""}`}
+                      onClick={() => toggleSubject(index, sub)}
+                    >
+                      {sub}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={addAssignment}
+            className="assignment-add-btn"
+          >
+            + Add Another Class
+          </button>
+        </CollapsibleCard>
+
+        {/* ================= ACTION BUTTONS ================= */}
+        <div className="actions">
+          <button type="submit" className="btn-primary">
+            {editingId ? "Update" : "Save"}
+          </button>
+          <button type="button" onClick={resetForm} className="btn-danger">
+            Reset
+          </button>
+        </div>
+      </form>
 
       {/* ================= LIST ================= */}
       <div className="card">
@@ -382,16 +411,39 @@ export default function TeacherMaster() {
               <tr>
                 <th>Sr. no</th>
                 <th>Full Name</th>
-                <th>Date of Joining</th>
+                <th>Teaching</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {teachers.map((t, i) => (
                 <tr key={t._id}>
                   <td>{i + 1}</td>
                   <td>{t.fullName}</td>
-                  <td>{t.joiningDate?.slice(0, 10)}</td>
+
+                  {/* TEACHING ASSIGNMENTS */}
+                  <td>
+                    {t.teachingAssignments?.length ? (
+                      t.teachingAssignments.map((a, idx) => (
+                        <div key={idx} className="teaching-line">
+                          <b>{a.standard}</b> → {a.subjects.join(", ")}
+                        </div>
+                      ))
+                    ) : (
+                      <span className="no-data">No Subjects Assigned</span>
+                    )}
+                  </td>
+
+                  {/* STATUS */}
+                  <td>
+                    <span className={`status-badge ${t.status.toLowerCase()}`}>
+                      {t.status}
+                    </span>
+                  </td>
+
+                  {/* ACTIONS */}
                   <td>
                     <button className="btn-link" onClick={() => editTeacher(t)}>
                       Edit
