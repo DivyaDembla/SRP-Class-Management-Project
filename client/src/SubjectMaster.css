@@ -1,0 +1,66 @@
+/* Subject input rows */
+.subject-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 8px;
+  transition: border 0.2s ease;
+}
+
+.subject-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* Add button spacing */
+.subject-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* filter dropdown spacing */
+.filter-group {
+  margin-bottom: 12px;
+}
+
+/* better table spacing */
+.table-card table td,
+.table-card table th {
+  padding: 10px;
+}
+
+/* empty message */
+.empty {
+  text-align: center;
+  color: #777;
+  padding: 15px 0;
+}
+
+/* put standard + subjects side by side */
+.subject-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* left side (dropdown) smaller */
+.standard-group {
+  flex: 0 0 260px;
+}
+
+/* right side (subjects) expands */
+.subject-group {
+  flex: 1;
+}
+
+/* make inputs full inside right side */
+.subject-group input {
+  width: 100%;
+}
+.form-actions {
+  margin-top: 10px;
+  padding-left: 280px; /* aligns with subject column */
+}

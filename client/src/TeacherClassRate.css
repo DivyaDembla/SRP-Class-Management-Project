@@ -1,0 +1,334 @@
+/* ========== RESET & GLOBALS ========== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background-color: #f3f4f6; /* light gray background */
+  font-family: "Poppins", sans-serif;
+  color: #1f2937; /* gray-800 */
+}
+
+/* ========== LAYOUT ========== */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: #f3f4f6;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #1f2937; /* dark gray/navy tone */
+  color: #fff;
+  flex-shrink: 0;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sidebar h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 0.8rem 0;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #d1d5db;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.sidebar a:hover {
+  color: #ffffff;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  background-color: #f9fafb;
+  overflow-x: hidden;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+}
+
+/* ========== TEACHER CLASS RATE CARD ========== */
+.tcr-card {
+  background: #ffffff;
+  width: 100%;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+/* Remove all external gaps */
+.classmaster-container,
+.tcr-content {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Titles */
+.tcr-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.tcr-divider {
+  margin: 1rem 0;
+  border: 1px solid #d1d5db;
+}
+
+.tcr-subtitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 1.5rem 0 1rem 0;
+}
+
+/* ========== FORM ========== */
+.tcr-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tcr-form-grid label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+  color: #374151;
+}
+
+.tcr-form-grid input,
+.tcr-form-grid select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.4rem;
+  font-size: 1rem;
+}
+
+/* Add Button */
+.tcr-add-btn {
+  padding: 0.7rem 1.4rem;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tcr-add-btn:hover {
+  background: #1e40af;
+}
+
+/* ========== TABLE ========== */
+.tcr-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.tcr-table {
+  width: 100%;
+  min-width: 700px; /* keeps columns readable */
+  border-collapse: collapse;
+}
+
+.tcr-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.tcr-table thead {
+  background: #f9fafb;
+}
+
+.tcr-table th,
+.tcr-table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.tcr-no-data {
+  text-align: center;
+  color: #6b7280;
+  padding: 1rem;
+}
+
+/* ========== ACTION BUTTONS ========== */
+.tcr-edit-btn,
+.tcr-update-btn,
+.tcr-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+
+.tcr-edit-btn {
+  color: #2563eb;
+}
+.tcr-edit-btn:hover {
+  color: #1e40af;
+}
+
+.tcr-update-btn {
+  color: #d97706;
+}
+.tcr-update-btn:hover {
+  color: #b45309;
+}
+
+.tcr-delete-btn {
+  color: #dc2626;
+}
+.tcr-delete-btn:hover {
+  color: #991b1b;
+}
+
+.tcr-subject-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+.tcr-subject-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.tcr-subject-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: white;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tcr-subject-item input[type="number"] {
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Filter grid */
+.tcr-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.tcr-filter-grid select {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Status buttons */
+.tcr-status-btn {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  font-size: 13px;
+}
+
+.tcr-status-btn.activate {
+  background-color: #22c55e; /* green */
+}
+
+.tcr-status-btn.deactivate {
+  background-color: #ef4444; /* red */
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+/* Large tablets and below */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 220px;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+/* Tablets and smaller screens */
+@media (max-width: 768px) {
+  .tcr-card {
+    padding: 1rem;
+  }
+
+  .tcr-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* smooth iOS scroll */
+  }
+
+  .tcr-table th,
+  .tcr-table td {
+    font-size: 0.8rem;
+    padding: 0.6rem;
+    white-space: nowrap;
+  }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+  .tcr-title {
+    font-size: 1.5rem;
+  }
+
+  .tcr-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .tcr-add-btn {
+    width: 100%;
+  }
+}

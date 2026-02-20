@@ -1,0 +1,178 @@
+/* --- General Layout --- */
+.student-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 100vh;
+  background: transparent; /* no global background */
+  padding: 2rem;
+  box-sizing: border-box;
+  background: transparent;
+  padding: 1rem 0;
+}
+
+/* --- Card --- */
+.student-card {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem 2rem;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.student-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+/* --- Filter Section --- */
+.filter-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.search-input,
+.batch-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  transition: 0.2s;
+  background: #ffffff;
+}
+
+.search-input:focus,
+.batch-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px #bfdbfe;
+  outline: none;
+}
+
+/* --- Table Styles --- */
+.table-container {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+}
+
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.student-table th {
+  background: #f9fafb;
+  color: #4b5563;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.student-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+.student-table tr:hover {
+  background: #f9fafb;
+}
+
+/* --- Inactive Row --- */
+.inactive-row {
+  background: transparent;
+  color: #6b7280;
+}
+
+.inactive-row:hover {
+  background: #f3f4f6;
+}
+
+/* --- Buttons --- */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-deactivate {
+  background: #ef4444;
+  color: #fff;
+  border-color: #dc2626;
+}
+
+.btn-deactivate:hover {
+  background: #dc2626;
+}
+
+.btn-activate {
+  background: #22c55e;
+  color: #fff;
+  border-color: #16a34a;
+}
+
+.btn-activate:hover {
+  background: #16a34a;
+}
+
+/* --- Empty State --- */
+.no-results {
+  text-align: center;
+  padding: 1rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* IMPORTANT: inactive rows should NOT block clicks */
+.inactive-row {
+  opacity: 0.65;
+}
+
+/* Ensure buttons stay clickable */
+.inactive-row .btn {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .student-card {
+    padding: 1.5rem;
+  }
+
+  .filter-section {
+    grid-template-columns: 1fr;
+  }
+
+  .student-title {
+    font-size: 1.5rem;
+  }
+}

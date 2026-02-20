@@ -1,0 +1,201 @@
+/* ================= ROOT ================= */
+.classmaster-root {
+  height: 100vh; /* important */
+  width: 100%;
+  background: #eef3f7;
+  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* header safe */
+}
+
+/* ================= HEADER ================= */
+.classmaster-header {
+  height: 56px;
+  background: #6b8f95;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.menu-btn,
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+}
+
+/* ================= LAYOUT ================= */
+.classmaster-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden; /* DO NOT scroll here */
+}
+
+/* ================= MAIN CONTENT ================= */
+.classmaster-main {
+  flex: 1;
+  padding: 20px;
+  font-size: 14px;
+  overflow-y: auto; /* page scroll */
+  overflow-x: hidden;
+}
+
+/* ================= CARDS ================= */
+.form-card,
+.table-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.form-card h2,
+.table-card h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* ================= FORMS ================= */
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 15px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.form-actions button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.form-actions button:nth-child(1) {
+  background: #5ea1f1;
+  color: white;
+}
+
+.form-actions button:nth-child(2) {
+  background: #6b8f95;
+  color: white;
+}
+
+.form-actions button:nth-child(3) {
+  background: #ddd;
+  color: #333;
+}
+
+/* ================= TABLE ================= */
+.table-wrapper {
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border-radius: 8px;
+}
+
+/* prevent squeeze */
+.table-card table {
+  width: 100%;
+  min-width: 750px;
+  border-collapse: collapse;
+}
+
+.table-card th,
+.table-card td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  white-space: nowrap;
+}
+
+.table-card thead th {
+  background: #f3f3f3;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.empty {
+  text-align: center;
+  color: gray;
+  padding: 10px;
+}
+
+/* ================= ACTION BUTTONS ================= */
+.action-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-edit {
+  background: #5ea1f1;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-activate {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 5px;
+}
+
+.btn-deactivate {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 5px;
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: inline-flex;
+    margin-right: 10px;
+  }
+
+  .table-wrapper {
+    max-height: 250px;
+  }
+
+  .form-actions {
+    flex-wrap: wrap;
+  }
+}

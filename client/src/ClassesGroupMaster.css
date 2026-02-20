@@ -1,0 +1,112 @@
+/* Page Layout */
+.page-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  color: #333;
+  padding: 20px;
+}
+
+/* Main Content */
+.content {
+  flex: 1;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.divider {
+  border: none;
+  border-bottom: 2px solid #e0e0e0;
+  margin: 15px 0 25px 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 5px;
+}
+
+.input,
+.textarea {
+  width: 90%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+/* ================= TABLE WRAPPED INSIDE CARD ================= */
+.table-wrapper {
+  max-height: 320px; /* vertical scroll */
+  overflow-y: auto;
+  overflow-x: auto;
+  border-radius: 8px;
+}
+
+/* Prevent table from squeezing */
+.card table {
+  width: 100%;
+  min-width: 700px; /* adjust if needed */
+  border-collapse: collapse;
+}
+
+/* Optional: sticky header */
+.card thead th {
+  position: sticky;
+  top: 0;
+  background: #f7f7f7;
+  z-index: 2;
+}
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+  }
+
+  .table-wrapper {
+    max-height: 240px;
+  }
+
+  .card th,
+  .card td {
+    padding: 8px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+}

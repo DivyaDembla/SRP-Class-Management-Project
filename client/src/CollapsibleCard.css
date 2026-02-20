@@ -1,0 +1,42 @@
+.collapsible-card {
+  position: relative;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: padding 0.3s, height 0.3s;
+}
+
+.collapsible-card.minimized {
+  padding: 12px 12px;
+  height: 50px; /* small height when collapsed */
+  overflow: hidden;
+}
+
+.collapsible-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.collapsible-card-header h2 {
+  margin: 2px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.collapsible-card-header .toggle-icon {
+  position: absolute;
+  top: 0px; /* move icon slightly up */
+  right: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  user-select: none;
+}
+
+.collapsible-card-body {
+  margin-top: 10px;
+}

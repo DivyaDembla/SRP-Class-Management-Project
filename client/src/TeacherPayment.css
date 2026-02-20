@@ -1,0 +1,233 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f3f4f6; /* light gray background */
+  color: #1f2937;
+}
+
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-y: auto;
+}
+
+/* --- Main Container --- */
+.main-container {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0.5rem;
+  flex-direction: column;
+  width: 100%; /* full width of viewport */
+}
+
+/* --- Card --- */
+.card {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  width: 100%; /* fill parent width */
+  max-width: 1400px; /* wider limit for large screens */
+}
+
+/* --- Card Title --- */
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* --- Form / Inputs --- */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: #374151;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #f9fafb;
+}
+
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* --- Fetch Row --- */
+.fetch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.btn-fetch {
+  background: #2563eb;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-fetch:hover {
+  background: #1d4ed8;
+}
+
+.amount-display span {
+  font-size: 0.9rem;
+  color: #374151;
+}
+.amount-display strong {
+  color: #16a34a;
+  font-size: 1.25rem;
+}
+
+/* --- Section Titles --- */
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.2rem 0 0.8rem;
+  border-top: 1px solid #d1d5db;
+  padding-top: 0.5rem;
+}
+
+/* --- Tables --- */
+.table-container {
+  overflow-x: auto;
+  border: 1px solid #d1d5db;
+  border-radius: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+  background: #f3f4f6;
+  font-size: 0.85rem;
+  color: #374151;
+  text-transform: uppercase;
+}
+
+tr:hover {
+  background: #eff6ff;
+}
+
+/* --- Save Button --- */
+.btn-save {
+  margin-top: 1rem;
+  background: #16a34a;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-save:hover {
+  background: #15803d;
+}
+
+/* --- Icon Buttons --- */
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+}
+.icon-btn:hover {
+  color: #2563eb;
+}
+.icon-green {
+  color: #16a34a;
+}
+
+/* --- Paid Row Highlight --- */
+.paid-row {
+  background: #dcfce7;
+}
+
+/* --- Modal --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 41, 55, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 0.75rem;
+  width: 90%;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.modal-header {
+  background: #f3f4f6;
+  padding: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.modal-content {
+  padding: 1rem;
+  white-space: pre-wrap;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: #1d4ed8;
+}

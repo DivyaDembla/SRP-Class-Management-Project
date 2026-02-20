@@ -1,0 +1,113 @@
+.rolemaster-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f7fafc; /* gray-100 */
+  color: #2d3748; /* gray-800 */
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 2rem; /* p-8 */
+}
+
+.card {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+}
+
+.title {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: bold;
+  margin-bottom: 1.5rem; /* mb-6 */
+}
+
+.divider {
+  margin-bottom: 1.5rem;
+  border-color: #e2e8f0; /* gray-300 */
+}
+
+/* Form */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+.label {
+  display: block;
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 500;
+  color: #4a5568; /* gray-700 */
+  margin-bottom: 0.25rem;
+}
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0; /* gray-300 */
+  border-radius: 0.5rem;
+  outline: none;
+  transition: 0.2s;
+}
+.input:focus,
+.textarea:focus {
+  border-color: #3b82f6; /* blue-500 */
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  gap: 1rem;
+}
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: 0.2s;
+}
+.btn-create {
+  background: #2563eb; /* blue-600 */
+  color: white;
+}
+.btn-create:hover {
+  background: #1d4ed8; /* blue-700 */
+}
+.btn-cancel {
+  background: #e2e8f0; /* gray-300 */
+  color: #4a5568; /* gray-700 */
+}
+.btn-cancel:hover {
+  background: #cbd5e1; /* gray-400 */
+}
+
+.input-error {
+  border: 1px solid red;
+}
+
+.error {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 2px;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  /* Keep buttons inside card padding */
+  .button-group {
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-right: 0.5rem;
+  }
+
+  /* Suppress button size */
+  .btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    min-width: auto;
+    max-width: 100%;
+    border-radius: 0.45rem;
+    line-height: 1.2;
+  }
+}

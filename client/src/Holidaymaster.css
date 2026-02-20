@@ -1,0 +1,94 @@
+.holidaymaster-container {
+  display: flex;
+  height: 100%;
+}
+
+.holidaymaster-main {
+  flex: 1;
+  padding: 20px;
+  background: #e9f0f8;
+  overflow-y: auto;
+}
+
+.line {
+  width: 100%;
+  height: 2px;
+  background-color: gray;
+}
+
+.holidaymaster-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.holidaymaster-card h2 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+input,
+select,
+textarea {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+textarea {
+  resize: none;
+  height: 80px;
+}
+
+.save-btn {
+  padding: 10px 15px;
+  border: none;
+  background: #5b7ce3;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: #4563c7;
+}
+
+/* Holiday List */
+.holidaymaster-list {
+  background: #f9fbfd;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.holidaymaster-list h3 {
+  margin-bottom: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+table th {
+  background: #f1f1f1;
+}
