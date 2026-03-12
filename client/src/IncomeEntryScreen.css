@@ -24,19 +24,6 @@
   margin-bottom: 1rem;
 }
 
-.income-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.income-col {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
 .income-label {
   display: block;
   font-size: 0.9rem;
@@ -46,27 +33,30 @@
 
 .income-input {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
+  font-size: 14px;
 }
 
+.income-upload-info {
+  margin-top: 3px;
+}
 .income-input.disabled {
   background: #f0f0f0;
 }
 
 .income-radio-group {
   display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
 }
 
 .income-radio {
-  display: inline-flex;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  white-space: nowrap; /* prevents text from wrapping to next line */
+  gap: 6px;
+  font-size: 14px;
 }
 
 .income-upload-info {
@@ -187,14 +177,40 @@
   margin: 1rem 0 2rem 0;
   max-width: 2000px;
 }
+.class-section-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.field {
+  flex: 1;
+}
+
+.income-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 24px;
+  margin-top: 10px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
 @media (max-width: 768px) {
   .income-card {
     padding: 1.2rem; /* still a card */
   }
 
-  .income-form {
-    grid-template-columns: 1fr; /* form stacks */
-    gap: 1.2rem;
+  .income-form-grid {
+    grid-template-columns: 1fr;
   }
 
   .btn-group {

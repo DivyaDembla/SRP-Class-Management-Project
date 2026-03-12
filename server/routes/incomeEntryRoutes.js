@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const IncomeEntry = require("../models/IncomeEntry");
 
-// -----------------------------
-// GET all income entries
-// -----------------------------
+// =============================
+// GET ALL INCOME ENTRIES
+// =============================
 router.get("/", async (req, res) => {
   try {
     const entries = await IncomeEntry.find().sort({ createdAt: -1 });
@@ -14,17 +14,17 @@ router.get("/", async (req, res) => {
   }
 });
 
-// -----------------------------
-// CREATE new income entry
-// -----------------------------
+// =============================
+// CREATE NEW INCOME ENTRY
+// =============================
 router.post("/", async (req, res) => {
   try {
     const {
       incomeCategory,
       date,
       studentName,
-      classSection,
-      feeType,
+      className,
+      section,
       amount,
       paymentMode,
       physicalReceipt,
@@ -36,8 +36,8 @@ router.post("/", async (req, res) => {
       incomeCategory,
       date,
       studentName,
-      classSection,
-      feeType,
+      className,
+      section,
       amount,
       paymentMode,
       physicalReceipt,
@@ -46,7 +46,37 @@ router.post("/", async (req, res) => {
     });
 
     const savedEntry = await newEntry.save();
+
     res.status(201).json(savedEntry);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================
+// DELETE ENTRY
+// =============================
+router.delete("/:id", async (req, res) => {
+  try {
+    await IncomeEntry.findByIdAndDelete(req.params.id);
+    res.json({ message: "Income entry deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================
+// UPDATE ENTRY
+// =============================
+router.put("/:id", async (req, res) => {
+  try {
+    const updatedEntry = await IncomeEntry.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true },
+    );
+
+    res.json(updatedEntry);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

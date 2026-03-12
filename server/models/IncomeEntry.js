@@ -13,27 +13,29 @@ const IncomeEntrySchema = new mongoose.Schema(
       required: true,
     },
 
+    // Student name OR manual name (for other income)
     studentName: {
       type: String,
+      required: true,
       trim: true,
-      default: "N/A",
     },
 
-    classSection: {
+    className: {
       type: String,
       trim: true,
-      default: "N/A",
+      default: null,
     },
 
-    feeType: {
+    section: {
       type: String,
       trim: true,
-      default: "N/A",
+      default: null,
     },
 
     amount: {
       type: Number,
       required: true,
+      min: 1,
     },
 
     paymentMode: {
@@ -53,10 +55,11 @@ const IncomeEntrySchema = new mongoose.Schema(
     },
 
     documentName: {
-      type: String, // just filename for now
+      type: String,
+      trim: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("IncomeEntry", IncomeEntrySchema);
