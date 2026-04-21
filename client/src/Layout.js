@@ -1,7 +1,6 @@
-// Layout.js
 import React, { useState } from "react";
 import Sidebar from "./Sidebar";
-import "./ClassMaster.css";
+import "./Layout.css";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Menu, LogOut } from "lucide-react";
 
@@ -16,40 +15,34 @@ export default function Layout() {
   };
 
   return (
-    <div className="classmaster-root">
-      {/* Top Header */}
-      <header className="classmaster-header">
-        {/* Mobile menu button */}
-        <button
-          className="mobile-menu-btn"
-          onClick={() => setSidebarOpen(true)}
-        >
-          <Menu size={22} color="white" />
-        </button>
+    <div className="layout-root">
+      {/* Header */}
+      <header className="layout-header">
+        {/* LEFT SIDE */}
+        <div className="header-left">
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+          >
+            <Menu size={22} color="white" />
+          </button>
 
-        <h1>Dashboard</h1>
+          <h1>Dashboard</h1>
+        </div>
 
-        {/* Logout button */}
-        <button
-          onClick={handleLogout}
-          style={{
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            color: "white",
-          }}
-          title="Logout"
-        >
+        {/* RIGHT SIDE */}
+        <button onClick={handleLogout} className="logout-btn" title="Logout">
           <LogOut size={20} />
         </button>
       </header>
 
-      <div className="classmaster-container">
+      {/* Container */}
+      <div className={`layout-container ${sidebarOpen ? "sidebar-open" : ""}`}>
         {/* Sidebar */}
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        {/* Main content */}
-        <main className="classmaster-main">
+        {/* Main */}
+        <main className="layout-main">
           <Outlet />
         </main>
       </div>

@@ -1,0 +1,96 @@
+/* Root layout */
+.layout-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Header */
+/* Header layout */
+.layout-header {
+  height: 60px;
+  background: #6f8f93;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Logout */
+.logout-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+/* Container */
+.layout-container {
+  display: flex;
+  flex: 1;
+}
+
+/* Sidebar (overlay + push hybrid) */
+.layout-sidebar {
+  width: 220px;
+  background: #c6d4d4;
+  border-right: 1px solid #b9c7c7;
+
+  position: fixed;
+  top: 60px;
+  left: -220px;
+  bottom: 0;
+
+  transition: left 0.3s ease;
+  z-index: 1001;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-sidebar.open {
+  left: 0;
+}
+
+/* Main content */
+.layout-main {
+  flex: 1;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+/* Push content when sidebar open */
+.layout-container.sidebar-open .layout-main {
+  margin-left: 220px;
+}
+
+/* Overlay */
+.layout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+  z-index: 1000;
+}
+
+.layout-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .layout-container.sidebar-open .layout-main {
+    margin-left: 0;
+  }
+}

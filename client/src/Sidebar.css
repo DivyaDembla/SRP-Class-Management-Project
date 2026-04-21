@@ -1,31 +1,47 @@
-/* Sidebar container */
-.classmaster-sidebar {
+/* Container reset (optional but safe) */
+.classmaster-container {
+  margin: 0;
+  padding: 0;
+}
+
+/* 🔥 SIDEBAR */
+.layout-sidebar {
   width: 220px;
   background: #c6d4d4;
   border-right: 1px solid #b9c7c7;
+
+  position: fixed;
+  top: 60px;
+  left: 0;
+  bottom: 0;
+
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+
   display: flex;
   flex-direction: column;
-  position: relative;
-  height: 100vh; /* 🔥 IMPORTANT */
-  overflow: hidden; /* prevent whole sidebar scroll */
+  z-index: 1001;
 }
-.classmaster-sidebar nav {
-  flex: 1; /* take remaining space */
-  overflow-y: auto; /* 🔥 vertical scroll */
-  padding-bottom: 10px;
+
+/* OPEN STATE */
+.layout-sidebar.open {
+  transform: translateX(0);
+}
+
+/* 🔥 SCROLLABLE NAV */
+.layout-sidebar nav {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 80px;
+
   scrollbar-width: none; /* Firefox */
 }
 
-.classmaster-sidebar nav::-webkit-scrollbar {
-  width: 6px;
+.layout-sidebar nav::-webkit-scrollbar {
+  display: none; /* Chrome */
 }
 
-.classmaster-sidebar nav::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 6px;
-}
-
-/* Sidebar sections */
+/* Sections */
 .sidebar-section {
   padding: 10px 15px;
 }
@@ -37,7 +53,7 @@
   color: #777;
 }
 
-/* Sidebar links */
+/* Links */
 .sidebar-link {
   text-decoration: none;
   display: flex;
@@ -47,8 +63,6 @@
   border-radius: 6px;
   font-size: 14px;
   color: #1f2937;
-  cursor: pointer;
-  margin-bottom: 3px;
 }
 
 .sidebar-link:hover {
@@ -56,20 +70,26 @@
   color: white;
 }
 
-/* Sidebar footer */
+/* 🔥 FOOTER */
 .sidebar-footer {
-  margin: 15px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
   background: #b9caca;
-  border-radius: 6px;
-  padding: 10px;
+  padding: 12px;
+  border-top: 1px solid #a5b5b5;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+/* Text */
 .username {
-  font-size: 14px;
   font-weight: 600;
+  font-size: 14px;
 }
 
 .role {
@@ -77,60 +97,21 @@
   color: #333;
 }
 
-/* Overlay */
+/* 🔥 OVERLAY */
 .sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.3);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease;
+  transition: 0.3s;
   z-index: 1000;
 }
 
-.sidebar-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Close button */
-.sidebar-close-btn {
-  display: none;
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.sidebar-close-btn svg {
-  stroke: #1f2937;
-}
-
-/* Mobile behavior */
+/* 🔥 MOBILE */
 @media (max-width: 768px) {
-  .classmaster-sidebar {
-    position: fixed;
-    top: 0;
-    left: -260px;
-    height: 100vh;
-    width: 180px;
-    z-index: 1001;
-    transition: left 0.3s ease;
-  }
-
-  .classmaster-sidebar.open {
-    left: 0;
-  }
-
-  .sidebar-close-btn {
-    display: block;
-  }
-}
-/* Disable overlay on desktop */
-@media (min-width: 769px) {
-  .sidebar-overlay {
-    display: none !important;
+  .layout-sidebar {
+    width: 200px;
+    top: 60px;
   }
 }
