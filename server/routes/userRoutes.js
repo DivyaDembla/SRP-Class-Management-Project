@@ -10,22 +10,35 @@ router.get("/", async (req, res) => {
     const users = await User.find().sort({ createdAt: -1 });
     res.json(users);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("GET USERS ERROR:", err.message);
+    res.status(500).json({ message: err.message });
   }
 });
 
 /* ================= CREATE USER + LOGIN ACCOUNT ================= */
 router.post("/", async (req, res) => {
   try {
-    const { name, username, gender, role, location } = req.body;
+    let { name, username, gender, role, location } = req.body;
 
-    /* ---- Check duplicate user master ---- */
+    // 🔹 Normalize username
+    username = username?.trim().toLowerCase();
+
+    // 🔹 Validation
+    if (!name || !username || !role) {
+      return res.status(400).json({ message: "Required fields missing" });
+    }
+
+    if (!Array.isArray(location) || location.length === 0) {
+      return res.status(400).json({ message: "Location is required" });
+    }
+
+    /* ---- Check duplicate ---- */
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    /* ---- Save user master ---- */
+    /* ---- Save User ---- */
     const newUser = new User({
       name,
       username,
@@ -36,25 +49,38 @@ router.post("/", async (req, res) => {
 
     const savedUser = await newUser.save();
 
-    /* ---- Create login account automatically ---- */
-    const existingAuth = await AuthUser.findOne({ username });
+    /* ---- Create AuthUser (SAFE) ---- */
+    try {
+      const existingAuth = await AuthUser.findOne({ username });
 
-    if (!existingAuth) {
-      const hashedPassword = await bcrypt.hash(username, 10);
+      if (!existingAuth) {
+        const hashedPassword = await bcrypt.hash(username, 10);
 
-      const loginUser = new AuthUser({
-        name,
-        username,
-        password: hashedPassword,
-      });
-
-      await loginUser.save();
+        await new AuthUser({
+          name,
+          username,
+          password: hashedPassword,
+          role,
+        }).save();
+      }
+    } catch (authErr) {
+      console.error("AuthUser ERROR:", authErr.message);
+      // don't break main flow
     }
 
     res.status(201).json(savedUser);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("POST USER ERROR:", err);
+
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "Duplicate field value" });
+    }
+
+    if (err.name === "ValidationError") {
+      return res.status(400).json({ message: err.message });
+    }
+
+    res.status(500).json({ message: err.message || "Server error" });
   }
 });
 
@@ -63,11 +89,13 @@ router.put("/:id", async (req, res) => {
   try {
     const updated = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
+      runValidators: true,
     });
 
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("UPDATE ERROR:", err.message);
+    res.status(500).json({ message: err.message });
   }
 });
 

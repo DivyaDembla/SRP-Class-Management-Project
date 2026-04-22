@@ -6,7 +6,11 @@ const UserSchema = new mongoose.Schema(
     username: { type: String, required: true, unique: true },
     gender: { type: String, required: true },
     role: { type: String, required: true },
-    location: { type: [String], required: true },
+    location: {
+      type: [String],
+      required: true,
+      validate: [(val) => val.length > 0, "Location required"],
+    },
   },
   { timestamps: true },
 );

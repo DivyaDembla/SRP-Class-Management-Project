@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const AuthUser = require("../models/AuthUser");
+const User = require("../models/User");
 
 const router = express.Router();
 
@@ -75,14 +76,23 @@ router.get("/me", async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await AuthUser.findById(decoded.id).select("-password");
+    // 🔹 get auth user (for username)
+    const authUser = await AuthUser.findById(decoded.id).select("-password");
 
-    if (!user) {
+    if (!authUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json(user);
+    // 🔥 get role from User collection
+    const mainUser = await User.findOne({ username: authUser.username });
+
+    res.json({
+      name: authUser.name,
+      username: authUser.username,
+      role: mainUser?.role || null, // ✅ THIS FIXES EVERYTHING
+    });
   } catch (error) {
+    console.error(error);
     res.status(401).json({ message: "Invalid token" });
   }
 });
